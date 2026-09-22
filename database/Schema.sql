@@ -6,11 +6,12 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`Movie` (
   `poster` VARCHAR(500) NULL,
   `title` VARCHAR(255) NOT NULL,
   `mpaa_rating` VARCHAR(10) NULL,
-  `description` TEXT NULL,
+  `synopsis` TEXT NULL,
   `genre` VARCHAR(100) NULL,
   `status` VARCHAR(50) NOT NULL,
   `trailer_image` VARCHAR(500) NULL,
   `trailer` VARCHAR(500) NULL,
+  `reviews` VARCHAR(500) NULL,
   PRIMARY KEY (`movie_id`))
 ENGINE = InnoDB;
 
@@ -35,43 +36,34 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`MovieRole` (
 ENGINE = InnoDB;
 
 
--- -----------------------------------------------------
--- Table `cinema_booking`.`Location`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cinema_booking`.`Location` (
-  `location_id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(255) NOT NULL,
-  `address` VARCHAR(255) NOT NULL,
-  `city` VARCHAR(100) NULL,
-  `state` VARCHAR(50) NULL,
-  `zipcode` VARCHAR(10) NULL,
-  PRIMARY KEY (`location_id`))
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`TheaterHall` (
+  `hall_id` INT NOT NULL AUTO_INCREMENT,
+  `hall_number` INT NOT NULL,
+  PRIMARY KEY (`hall_id`),
+  UNIQUE (`hall_number`))
 ENGINE = InnoDB;
 
 
--- -----------------------------------------------------
--- Table `cinema_booking`.`Showtime`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cinema_booking`.`Showtime` (
-  `showtime` DATETIME NOT NULL,
-  `movie_id` INT NOT NULL,
-  `location_id` INT NOT NULL,
-  PRIMARY KEY (`showtime`, `movie_id`, `location_id`),
-  INDEX `fk_Showtime_Movie_idx` (`movie_id` ASC) VISIBLE,
-  INDEX `fk_Showtime_Location1_idx` (`location_id` ASC) VISIBLE,
-  CONSTRAINT `fk_Showtime_Movie`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `cinema_booking`.`Movie` (`movie_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Showtime_Location1`
-    FOREIGN KEY (`location_id`)
-    REFERENCES `cinema_booking`.`Location` (`location_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION);
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`Showtime`(
+    `showtime_id` INT NOT NULL AUTO_INCREMENT,
+    `movie_id` INT NOT NULL,
+    `hall_id` INT NOT NULL,
+    `show_date` DATE NOT NULL,
+    `show_time` VARCHAR(10) NOT NULL,
+
+    PRIMARY KEY (`showtime_id`),
+    UNIQUE (`movie_id`, `hall_id`, `show_date`, `show_time`),
+
+    FOREIGN KEY (`movie_id`) REFERENCES Movie(`movie_id`),
+    FOREIGN KEY (`hall_id`) REFERENCES TheaterHall(`hall_id`)
+)
+ENGINE = InnoDB;
+
+
 
 INSERT INTO Movie
-    (poster, title, mpaa_rating, description, genre, status, trailer_image, trailer)
+    (poster, title, mpaa_rating, synopsis, genre, status,
+     trailer_image, trailer, reviews)
 VALUES
     (
         'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg',
@@ -79,9 +71,10 @@ VALUES
         'PG-13',
         'A team of explorers travels through a wormhole in space in an attempt to ensure humanity''s survival.',
         'Sci-Fi, Drama, Adventure',
-        'Out Now',
+        'Currently Running',
         'https://img.youtube.com/vi/zSWdZVtXT7E/maxresdefault.jpg',
-        'https://www.youtube.com/watch?v=zSWdZVtXT7E'
+        'https://www.youtube.com/watch?v=zSWdZVtXT7E',
+        'https://www.rottentomatoes.com/m/interstellar_2014#critics-reviews'
     ),
     (
         'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
@@ -89,9 +82,10 @@ VALUES
         'PG-13',
         'Batman faces a criminal mastermind who plunges Gotham City into chaos.',
         'Action, Crime, Drama',
-        'Out Now',
+        'Currently Running',
         'https://img.youtube.com/vi/EXeTwQWrcwY/maxresdefault.jpg',
-        'https://www.youtube.com/watch?v=EXeTwQWrcwY'
+        'https://www.youtube.com/watch?v=EXeTwQWrcwY',
+        'https://www.rottentomatoes.com/m/the_dark_knight#critics-reviews'
     ),
     (
         'https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',
@@ -99,9 +93,10 @@ VALUES
         'R',
         'The story of J. Robert Oppenheimer and his role in the development of the atomic bomb.',
         'Drama, History',
-        'Out Now',
+        'Currently Running',
         'https://img.youtube.com/vi/uYPbbksJxIg/maxresdefault.jpg',
-        'https://www.youtube.com/watch?v=uYPbbksJxIg'
+        'https://www.youtube.com/watch?v=uYPbbksJxIg',
+        'https://www.rottentomatoes.com/m/oppenheimer_2023#critics-reviews'
     ),
     (
         'https://image.tmdb.org/t/p/w500/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg',
@@ -109,9 +104,10 @@ VALUES
         'R',
         'A banker sentenced to life in prison forms an unlikely friendship while maintaining hope for freedom.',
         'Drama',
-        'Out Now',
+        'Currently Running',
         'https://img.youtube.com/vi/PLl99DlL6b4/maxresdefault.jpg',
-        'https://www.youtube.com/watch?v=PLl99DlL6b4'
+        'https://www.youtube.com/watch?v=PLl99DlL6b4',
+        'https://www.rottentomatoes.com/m/shawshank_redemption#critics-reviews'
     ),
     (
         'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg',
@@ -119,9 +115,10 @@ VALUES
         'PG-13',
         'Paul Atreides unites with Chani and the Fremen while seeking revenge against those who destroyed his family.',
         'Sci-Fi, Adventure, Drama',
-        'Out Now',
+        'Currently Running',
         'https://img.youtube.com/vi/Way9Dexny3w/maxresdefault.jpg',
-        'https://www.youtube.com/watch?v=Way9Dexny3w'
+        'https://www.youtube.com/watch?v=Way9Dexny3w',
+        'https://www.rottentomatoes.com/m/dune_part_two#critics-reviews'
     ),
     (
         'https://image.tmdb.org/t/p/w500/kMDUS7VmFhb2coRfVBoGLR8ADBt.jpg',
@@ -129,9 +126,10 @@ VALUES
         'PG-13',
         'Peter Parker struggles to balance his personal life with his responsibilities as Spider-Man while facing Doctor Octopus.',
         'Action, Adventure, Sci-Fi',
-        'Out Now',
+        'Currently Running',
         'https://img.youtube.com/vi/1s9Yln0YwCw/maxresdefault.jpg',
-        'https://www.youtube.com/watch?v=1s9Yln0YwCw'
+        'https://www.youtube.com/watch?v=1s9Yln0YwCw',
+        'https://www.rottentomatoes.com/m/spiderman_2#critics-reviews'
     ),
     (
         NULL,
@@ -140,6 +138,7 @@ VALUES
         'The Avengers return for a new chapter in the Marvel Cinematic Universe.',
         'Action, Adventure, Sci-Fi',
         'Coming Soon',
+        NULL,
         NULL,
         NULL
     ),
@@ -151,6 +150,7 @@ VALUES
         'Action, Crime, Drama',
         'Coming Soon',
         NULL,
+        NULL,
         NULL
     ),
     (
@@ -160,6 +160,7 @@ VALUES
         'Miles Morales continues his journey across the Spider-Verse.',
         'Animation, Action, Adventure',
         'Coming Soon',
+        NULL,
         NULL,
         NULL
     ),
@@ -171,6 +172,7 @@ VALUES
         'Animation, Adventure, Family',
         'Coming Soon',
         NULL,
+        NULL,
         NULL
     ),
     (
@@ -180,6 +182,7 @@ VALUES
         'Mario and his friends return for a new animated adventure.',
         'Animation, Adventure, Comedy',
         'Coming Soon',
+        NULL,
         NULL,
         NULL
     ),
@@ -191,8 +194,11 @@ VALUES
         'Sci-Fi, Adventure, Action',
         'Coming Soon',
         NULL,
+        NULL,
         NULL
     );
+
+
 
 
 INSERT INTO Person
@@ -237,6 +243,8 @@ VALUES
     ('James', 'Franco');
 
 
+
+
 INSERT INTO MovieRole
     (movie_id, person_id, role, character_name)
 VALUES
@@ -254,6 +262,7 @@ VALUES
     (2, 20, 'Actor', 'Harvey Dent'),
     (2, 21, 'Actor', 'James Gordon'),
 
+
     (3, 1, 'Director', NULL),
     (3, 2, 'Producer', NULL),
     (3, 22, 'Actor', 'J. Robert Oppenheimer'),
@@ -267,6 +276,7 @@ VALUES
     (4, 27, 'Actor', 'Ellis Boyd Redding'),
     (4, 28, 'Actor', 'Warden Norton'),
     (4, 29, 'Actor', 'Heywood'),
+
 
     (5, 5, 'Director', NULL),
     (5, 6, 'Producer', NULL),
@@ -282,99 +292,94 @@ VALUES
     (6, 36, 'Actor', 'Otto Octavius / Doctor Octopus'),
     (6, 37, 'Actor', 'Harry Osborn'),
 
+
     (7, 9, 'Director', NULL),
     (7, 10, 'Director', NULL),
     (7, 11, 'Producer', NULL),
 
+
     (8, 12, 'Director', NULL),
+
 
     (12, 13, 'Director', NULL);
 
 
-INSERT INTO Location
-    (name, address, city, state, zipcode)
+
+
+INSERT INTO TheaterHall
+    (hall_number)
 VALUES
-    (
-        'Athens Cinema',
-        '100 College Avenue',
-        'Athens',
-        'GA',
-        '30601'
-    ),
-    (
-        'Atlanta Cinema',
-        '250 Peachtree Street',
-        'Atlanta',
-        'GA',
-        '30303'
-    ),
-    (
-        'Savannah Cinema',
-        '75 River Street',
-        'Savannah',
-        'GA',
-        '31401'
-    );
+    (1),
+    (2),
+    (3);
+
+
 
 
 INSERT INTO Showtime
-    (showtime, movie_id, location_id)
+    (movie_id, hall_id, show_date, show_time)
 VALUES
-    ('2026-09-26 13:00:00', 1, 1),
-    ('2026-09-26 17:00:00', 1, 1),
-    ('2026-09-26 21:00:00', 1, 1),
-    ('2026-09-26 14:30:00', 1, 2),
-    ('2026-09-26 19:00:00', 1, 2),
-    ('2026-09-26 18:00:00', 1, 3),
+    (1, 1, '2026-09-26', '1:00 PM'),
+    (1, 1, '2026-09-26', '5:00 PM'),
+    (1, 1, '2026-09-26', '9:00 PM'),
+    (1, 2, '2026-09-26', '2:30 PM'),
+    (1, 2, '2026-09-26', '7:00 PM'),
+    (1, 3, '2026-09-26', '6:00 PM'),
 
-    ('2026-09-26 14:00:00', 2, 1),
-    ('2026-09-26 18:00:00', 2, 1),
-    ('2026-09-26 21:30:00', 2, 1),
-    ('2026-09-26 16:00:00', 2, 2),
-    ('2026-09-26 20:00:00', 2, 2),
-    ('2026-09-26 19:30:00', 2, 3),
+    (2, 1, '2026-09-26', '2:00 PM'),
+    (2, 1, '2026-09-26', '6:00 PM'),
+    (2, 1, '2026-09-26', '9:30 PM'),
+    (2, 2, '2026-09-26', '4:00 PM'),
+    (2, 2, '2026-09-26', '8:00 PM'),
+    (2, 3, '2026-09-26', '7:30 PM'),
 
-    ('2026-09-26 12:30:00', 3, 1),
-    ('2026-09-26 16:30:00', 3, 1),
-    ('2026-09-26 20:30:00', 3, 1),
-    ('2026-09-26 15:30:00', 3, 2),
-    ('2026-09-26 19:30:00', 3, 2),
-    ('2026-09-26 17:30:00', 3, 3),
+    (3, 1, '2026-09-26', '12:30 PM'),
+    (3, 1, '2026-09-26', '4:30 PM'),
+    (3, 1, '2026-09-26', '8:30 PM'),
+    (3, 2, '2026-09-26', '3:30 PM'),
+    (3, 2, '2026-09-26', '7:30 PM'),
+    (3, 3, '2026-09-26', '5:30 PM'),
 
-    ('2026-09-26 13:30:00', 4, 1),
-    ('2026-09-26 18:30:00', 4, 1),
-    ('2026-09-26 14:00:00', 4, 2),
-    ('2026-09-26 19:00:00', 4, 2),
-    ('2026-09-26 20:00:00', 4, 3),
+    (4, 1, '2026-09-26', '1:30 PM'),
+    (4, 1, '2026-09-26', '6:30 PM'),
+    (4, 2, '2026-09-26', '2:00 PM'),
+    (4, 2, '2026-09-26', '7:00 PM'),
+    (4, 3, '2026-09-26', '8:00 PM'),
+    
+    (5, 1, '2026-09-26', '12:00 PM'),
+    (5, 1, '2026-09-26', '4:00 PM'),
+    (5, 1, '2026-09-26', '8:00 PM'),
+    (5, 2, '2026-09-26', '1:00 PM'),
+    (5, 2, '2026-09-26', '5:30 PM'),
+    (5, 2, '2026-09-26', '9:30 PM'),
+    (5, 3, '2026-09-26', '6:30 PM'),
 
-    ('2026-09-26 12:00:00', 5, 1),
-    ('2026-09-26 16:00:00', 5, 1),
-    ('2026-09-26 20:00:00', 5, 1),
-    ('2026-09-26 13:00:00', 5, 2),
-    ('2026-09-26 17:30:00', 5, 2),
-    ('2026-09-26 21:30:00', 5, 2),
-    ('2026-09-26 18:30:00', 5, 3),
 
-    ('2026-09-26 13:00:00', 6, 1),
-    ('2026-09-26 16:00:00', 6, 1),
-    ('2026-09-26 19:00:00', 6, 1),
-    ('2026-09-26 14:30:00', 6, 2),
-    ('2026-09-26 18:30:00', 6, 2),
-    ('2026-09-26 20:30:00', 6, 3),
+    (6, 1, '2026-09-26', '1:00 PM'),
+    (6, 1, '2026-09-26', '4:00 PM'),
+    (6, 1, '2026-09-26', '7:00 PM'),
+    (6, 2, '2026-09-26', '2:30 PM'),
+    (6, 2, '2026-09-26', '6:30 PM'),
+    (6, 3, '2026-09-26', '8:30 PM'),
 
-    ('2026-09-27 14:00:00', 1, 1),
-    ('2026-09-27 19:00:00', 1, 2),
+  
+    (1, 1, '2026-09-27', '2:00 PM'),
+    (1, 2, '2026-09-27', '7:00 PM'),
 
-    ('2026-09-27 15:00:00', 2, 1),
-    ('2026-09-27 20:00:00', 2, 3),
+  
+    (2, 1, '2026-09-27', '3:00 PM'),
+    (2, 3, '2026-09-27', '8:00 PM'),
 
-    ('2026-09-27 16:00:00', 3, 1),
-    ('2026-09-27 20:30:00', 3, 2),
 
-    ('2026-09-27 17:00:00', 4, 1),
+    (3, 1, '2026-09-27', '4:00 PM'),
+    (3, 2, '2026-09-27', '8:30 PM'),
 
-    ('2026-09-27 14:30:00', 5, 2),
-    ('2026-09-27 19:30:00', 5, 3),
+    (4, 1, '2026-09-27', '5:00 PM'),
 
-    ('2026-09-27 13:30:00', 6, 1),
-    ('2026-09-27 18:00:00', 6, 2);
+
+    (5, 2, '2026-09-27', '2:30 PM'),
+    (5, 3, '2026-09-27', '7:30 PM'),
+
+
+    (6, 1, '2026-09-27', '1:30 PM'),
+    (6, 2, '2026-09-27', '6:00 PM');
