@@ -46,9 +46,21 @@ def get_coming_soon_movies() -> List[dict]:
     with SessionLocal() as session:
         movies = session.query(Movie).filter(Movie.status == STATUS_COMING_SOON).all()
         return _to_list(movies)
+
+ 
+def get_movies_by_name(name: str) -> List[dict]:
+    """
+    Return movies whose title contains the given text (case-insensitive,
+    partial word match). E.g. search_movies_by_name("spider") matches
+    "Spider-Man", "The Amazing Spider-Man", etc.
+    """
+    with SessionLocal() as session:
+        query = session.query(Movie).filter(Movie.title.ilike(f"%{name}%"))
+        return _to_list(query.all())
+ 
  
  
 if __name__ == "__main__":
-    print("Out Now:", get_out_now_movies())
-    print("Coming Soon:", get_coming_soon_movies())
- 
+    # print("Out Now:", get_out_now_movies())
+    # print("Coming Soon:", get_coming_soon_movies())
+    print("Spider Movies:", get_movies_by_name("spider"))
