@@ -4,6 +4,7 @@ movie_getters.py
 Query functions for pulling Movie rows from the database, filtered by status.
 """
  
+from datetime import datetime
 from typing import List, Optional
  
 from sqlalchemy import create_engine
@@ -34,6 +35,8 @@ def _to_list(movies: List[Movie]) -> List[dict]:
 # Getters
 # ---------------------------------------------------------------------------
  
+
+ ## filter by showdate logic will be added later 
 def get_out_now_movies(genre: Optional[str] = None) -> List[dict]:
     """Return movies whose status is 'out now' as a list of dicts."""
     with SessionLocal() as session:
@@ -54,17 +57,44 @@ def get_coming_soon_movies(genre: Optional[str] = None) -> List[dict]:
         return _to_list(movies)
 
  
-def get_movies_by_name(name: str) -> List[dict]:
+def get_movies_by_name(name: str, genre: Optional[str] = None) -> List[dict]:
     """
     Return movies whose title contains the given text (case-insensitive,
     partial word match). E.g. search_movies_by_name("spider") matches
     "Spider-Man", "The Amazing Spider-Man", etc.
+
+    Used in search bar for searching movies by name. Returns a list of dicts.
+    includes get by genre filter as well. if genere is selected in drop down 
+
     """
     with SessionLocal() as session:
         query = session.query(Movie).filter(Movie.title.ilike(f"%{name}%"))
+        if genre:
+            query = query.filter(Movie.genre.ilike(f"%{genre}%"))
         return _to_list(query.all())
- 
- 
+#  # n
+# def get_universal_search_results( status: Optional[str] = None, name: Optional[str] = None, genre: Optional[str] = None, showtimes: Optional[datetime] = None) -> List[dict]:
+#     """ot funtional yils show time is added 
+#     Return movies whose title or genre contains the given text (case-insensitive,
+#     partial word match). E.g. search_movies_by_name("spider") matches
+#     "Spider-Man", "The Amazing Spider-Man", etc.
+
+
+#     Universal search function that allows filtering by name, genre, and showtimes. Returns a list of dicts.
+#     """
+#     with SessionLocal() as session:
+#         query = session.query(Movie)
+#         if status:
+#             query = query.filter(Movie.status == status)
+#         if genre:
+#              query = query.filter(Movie.genre.ilike(f"%{genre}%"))
+#         if name:
+#              query = query.filter(Movie.title.ilike(f"%{name}%"))
+#         if showtimes:
+#                 query = query.filter(Movie.showtimes.ilike(f"%{showtimes}%"))
+
+#         movies = query.all()
+#         return _to_list(movies)
  
 if __name__ == "__main__":
     print("Out Now:", get_out_now_movies("Action"))
