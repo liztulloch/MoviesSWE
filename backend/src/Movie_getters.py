@@ -34,17 +34,23 @@ def _to_list(movies: List[Movie]) -> List[dict]:
 # Getters
 # ---------------------------------------------------------------------------
  
-def get_out_now_movies() -> List[dict]:
+def get_out_now_movies(genre: Optional[str] = None) -> List[dict]:
     """Return movies whose status is 'out now' as a list of dicts."""
     with SessionLocal() as session:
-        movies = session.query(Movie).filter(Movie.status == STATUS_OUT_NOW).all()
+        query = session.query(Movie).filter(Movie.status == STATUS_OUT_NOW)
+        if genre:
+             query = query.filter(Movie.genre.ilike(f"%{genre}%"))
+        movies = query.all()
         return _to_list(movies)
  
  
-def get_coming_soon_movies() -> List[dict]:
+def get_coming_soon_movies(genre: Optional[str] = None) -> List[dict]:
     """Return movies whose status is 'coming soon' as a list of dicts."""
     with SessionLocal() as session:
-        movies = session.query(Movie).filter(Movie.status == STATUS_COMING_SOON).all()
+        query = session.query(Movie).filter(Movie.status == STATUS_COMING_SOON)
+        if genre:
+             query = query.filter(Movie.genre.ilike(f"%{genre}%"))
+        movies = query.all()
         return _to_list(movies)
 
  
@@ -61,6 +67,6 @@ def get_movies_by_name(name: str) -> List[dict]:
  
  
 if __name__ == "__main__":
-    # print("Out Now:", get_out_now_movies())
-    # print("Coming Soon:", get_coming_soon_movies())
-    print("Spider Movies:", get_movies_by_name("spider"))
+    print("Out Now:", get_out_now_movies("Action"))
+    print("Coming Soon:", get_coming_soon_movies("Action"))
+    #print("Spider Movies:", get_movies_by_name("spider"))
