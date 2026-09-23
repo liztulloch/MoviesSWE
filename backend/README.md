@@ -48,7 +48,7 @@ curl -i 'http://127.0.0.1:8000/movies/currently-running?genre=Fantasy'
 curl -sS http://127.0.0.1:8000/movies/coming-soon
 
 # search by name
-curl -sS 'http://127.0.0.1:8000/movies/search?name=Inception'
+curl -sS 'http://127.0.0.1:8000/movies/search?name=spider'
 ```
 
 When a query returns no results the API sets an `X-Message: No movies found` header and returns an empty JSON list `[]`.

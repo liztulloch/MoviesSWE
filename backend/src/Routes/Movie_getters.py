@@ -1,10 +1,10 @@
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Response
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from ..Database import get_db
-from ..Models.Movie_Models import Movie
+from ..Models.Movie_Models import Movie, MovieRole
 from ..schemas.Movie_schema import MovieSchema
 
 
@@ -39,6 +39,12 @@ def get_currently_running_movies(
             Movie.genre.ilike(f"%{genre}%")
         )
 
+    # Eager-load related objects so `from_movie()` can access them
+    query = query.options(
+        selectinload(Movie.movie_roles).selectinload(MovieRole.person),
+        selectinload(Movie.showtimes),
+    )
+
     movies = query.all()
     if not movies:
         if response is not None:
@@ -67,6 +73,12 @@ def get_coming_soon_movies(
         query = query.filter(
             Movie.genre.ilike(f"%{genre}%")
         )
+
+    # Eager-load related objects so `from_movie()` can access them
+    query = query.options(
+        selectinload(Movie.movie_roles).selectinload(MovieRole.person),
+        selectinload(Movie.showtimes),
+    )
 
     movies = query.all()
     if not movies:
@@ -97,6 +109,12 @@ def get_movies_by_name(
         query = query.filter(
             Movie.genre.ilike(f"%{genre}%")
         )
+
+    # Eager-load related objects so `from_movie()` can access them
+    query = query.options(
+        selectinload(Movie.movie_roles).selectinload(MovieRole.person),
+        selectinload(Movie.showtimes),
+    )
 
     movies = query.all()
     if not movies:

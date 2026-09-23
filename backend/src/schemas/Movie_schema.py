@@ -21,11 +21,22 @@ class ProducerSchema(BaseModel):
 
     @classmethod
     def from_movie(cls, movie: Movie) -> "ProducerSchema":
-        producers = [
-            mr.person.full_name
-            for mr in movie.movie_roles
-            if mr.role.lower() == "producer"
-        ]
+        producers = []
+        for mr in getattr(movie, "movie_roles", []) or []:
+            role = (mr.role or "").strip().lower()
+            if role != "producer":
+                continue
+            person = getattr(mr, "person", None)
+            if not person:
+                continue
+            # Prefer `full_name` property if present
+            name = getattr(person, "full_name", None)
+            if not name:
+                fname = getattr(person, "first_name", "")
+                lname = getattr(person, "last_name", "")
+                name = f"{fname} {lname}".strip()
+            if name:
+                producers.append(name)
         return cls(movie_id=movie.movie_id, producers=producers)
 
 
@@ -36,11 +47,24 @@ class CastSchema(BaseModel):
     @classmethod
     def from_movie(cls, movie: Movie) -> "CastSchema":
         cast = []
-        for mr in movie.movie_roles:
-            if mr.role.lower() != "actor":
+        for mr in getattr(movie, "movie_roles", []) or []:
+            role = (mr.role or "").strip().lower()
+            if role != "actor":
                 continue
-            name = mr.person.full_name
-            cast.append(f"{name} as {mr.character_name}" if mr.character_name else name)
+            person = getattr(mr, "person", None)
+            if not person:
+                continue
+            name = getattr(person, "full_name", None)
+            if not name:
+                fname = getattr(person, "first_name", "")
+                lname = getattr(person, "last_name", "")
+                name = f"{fname} {lname}".strip()
+            if not name:
+                continue
+            if getattr(mr, "character_name", None):
+                cast.append(f"{name} as {mr.character_name}")
+            else:
+                cast.append(name)
         return cls(movie_id=movie.movie_id, cast=cast)
 
 
