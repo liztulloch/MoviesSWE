@@ -7,8 +7,11 @@ gets a fresh session per-request and it's closed automatically after.
 
 import os
 
+from dotenv import load_dotenv
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+load_dotenv() 
 
 # Point this at your real MySQL instance via env var. Falls back to a local
 # default so the app is at least importable without one set.
