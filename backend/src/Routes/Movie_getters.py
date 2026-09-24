@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Response, HTTPException, status
 from sqlalchemy.orm import Session, selectinload
 
 from ..Database import get_db
@@ -51,6 +51,26 @@ def get_currently_running_movies(
             response.headers["X-Message"] = "No movies found"
         return []
     return [MovieSchema.from_movie(m) for m in movies]
+
+
+@router.get("/{movie_id}", response_model=MovieSchema)
+def get_movie_by_id(
+    movie_id: int,
+    db: Session = Depends(get_db),
+):
+    """Get a single movie by its `movie_id`. Returns 404 if not found."""
+
+    query = db.query(Movie).filter(Movie.movie_id == movie_id)
+    query = query.options(
+        selectinload(Movie.movie_roles).selectinload(MovieRole.person),
+        selectinload(Movie.showtimes),
+    )
+
+    movie = query.one_or_none()
+    if not movie:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found")
+
+    return MovieSchema.from_movie(movie)
 
 
 @router.get("/coming-soon", response_model=List[MovieSchema])
