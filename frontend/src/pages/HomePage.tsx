@@ -11,7 +11,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Re-query when search or genre changes
+  // Restart query when search or genre changes
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
