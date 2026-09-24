@@ -1,10 +1,10 @@
 import type { Movie } from "../types";
 
-// Placeholder trailer ID (YouTube's own demo video). Replace with real trailer IDs in the DB seed.
+// Placeholder trailer ID
 const T = "M7lc1UVf-VE";
 
-// Mock data with the same shape as the API. Used until the backend is ready.
-export const mockMovies: Movie[] = [
+// Sample data to use befoe backend is ready.
+const baseMovies: Movie[] = [
   { id: 1, title: "Midnight Circuit", genre: "Action", rating: "PG-13", status: "CURRENTLY_RUNNING", posterUrl: "", trailerUrl: T, description: "A retired courier is pulled back into the city's underground race scene when her brother goes missing." },
   { id: 2, title: "The Lantern Keeper", genre: "Animation", rating: "PG", status: "CURRENTLY_RUNNING", posterUrl: "", trailerUrl: T, description: "A young apprentice must relight the village lanterns before the longest night of the year." },
   { id: 3, title: "Second Helpings", genre: "Comedy", rating: "PG-13", status: "CURRENTLY_RUNNING", posterUrl: "", trailerUrl: T, description: "Two rival food truck owners are forced to share one parking spot for a summer." },
@@ -16,3 +16,18 @@ export const mockMovies: Movie[] = [
   { id: 9, title: "Iron Meridian", genre: "Action", rating: "R", status: "COMING_SOON", posterUrl: "", trailerUrl: T, description: "A rail security chief has one night to stop a heist on the country's fastest train." },
   { id: 10, title: "Moonwake", genre: "Sci-Fi", rating: "PG", status: "COMING_SOON", posterUrl: "", trailerUrl: T, description: "A family on a lunar colony discovers their new home has been waiting for them." },
 ];
+
+const extras: Record<number, Pick<Movie, "cast" | "director" | "producers">> = {
+  1: { director: "Renata Cole", producers: ["Marcus Bell"], cast: ["Dana Whitlock", "Theo Marsh", "Priya Anand"] },
+  2: { director: "Elias Ward", producers: ["Naomi Fischer"], cast: ["Lucy Park", "Omar Haddad", "June Alvarez"] },
+  3: { director: "Gina Okafor", producers: ["Sam Rivera"], cast: ["Ben Toller", "Mia Chen", "Carlos Duarte"] },
+  4: { director: "Anders Holm", producers: ["Ruth Kessler"], cast: ["Ingrid Moss", "Paul Grayson", "Leah Stone"] },
+  5: { director: "Vera Lindqvist", producers: ["Jonah Pike"], cast: ["Kai Morrow", "Tessa Bright", "Dev Malhotra"] },
+  6: { director: "Hiro Tanaka", producers: ["Alma Reyes"], cast: ["Nadia Volkov", "Eli Frost", "Grace Adeyemi"] },
+  7: { director: "Claire Dubois", producers: ["Ravi Menon"], cast: ["Sophie Lang", "Marco Bellini", "Ada Whitfield"] },
+  8: { director: "Damon Reyes", producers: ["Ellie Zhang"], cast: ["Nora Blake", "Jack Ostrow", "Tamika Hayes"] },
+  9: { director: "Petra Novak", producers: ["Louis Abara"], cast: ["Rex Callahan", "Mina Sato", "Ollie Grant"] },
+  10: { director: "Yara Haddad", producers: ["Felix Warner"], cast: ["Amara Cole", "Leo Baptiste", "Ines Duarte"] },
+};
+
+export const mockMovies: Movie[] = baseMovies.map((m) => ({ ...m, ...extras[m.id] }));

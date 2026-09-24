@@ -1,16 +1,17 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Young+Serif&display=swap");
 
 :root {
-  --bg: #22101c;
-  --surface: #331a2b;
-  --surface-2: #402138;
-  --line: #4f2d43;
-  --text: #f5ebdd;
-  --muted: #bda7b4;
-  --marquee: #f0b23e;
-  --marquee-ink: #2a1400;
+  --bg: #0d0a0a;
+  --surface: #171212;
+  --surface-2: #241b1b;
+  --line: #382b2b;
+  --text: #f6efe9;
+  --muted: #b9aaa6;
+  --marquee: #ff5252;
+  --marquee-ink: #1a0000;
+  --crimson: #7a1218;
   --focus: #7fd1c7;
-  --danger: #ff9a8a;
+  --danger: #ffb020;
 
   --font-display: "Young Serif", Georgia, "Times New Roman", serif;
   --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -42,8 +43,8 @@ p { margin: 0 0 1rem; max-width: 65ch; }
 /* Navbar */
 .navbar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: .85rem 1.25rem; border-bottom: 1px solid var(--line);
-  background: var(--surface);
+  padding: .85rem 1.25rem; border-bottom: 1px solid var(--marquee);
+  background: var(--crimson);
 }
 .brand { display: flex; align-items: center; gap: .65rem; text-decoration: none; color: var(--text); }
 .brand-mark {
@@ -76,7 +77,6 @@ p { margin: 0 0 1rem; max-width: 65ch; }
 .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1.5rem 1.25rem; }
 
 .movie-card { display: block; text-decoration: none; color: var(--text); }
-.movie-card:hover h3, .movie-card:focus-visible h3 { color: var(--marquee); }
 .movie-card-body { padding-top: .6rem; }
 .movie-card-body h3 { margin: 0; }
 
@@ -173,3 +173,19 @@ p { margin: 0 0 1rem; max-width: 65ch; }
   .brand-name { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+.seat-locked { opacity: .35; cursor: not-allowed; }
+
+.movie-card-link { display: block; text-decoration: none; color: var(--text); }
+.movie-card-link:hover h3, .movie-card-link:focus-visible h3 { color: var(--marquee); }
+
+.card-showtimes { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
+a.chip { text-decoration: none; display: inline-block; }
+.chip-sm { padding: .25rem .65rem; font-size: .8rem; }
+
+.detail-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; margin-bottom: 1rem; }
+.detail-meta .meta { margin: 0; }
+.rating-badge {
+  padding: .2rem .7rem; border: 1px solid var(--marquee); color: var(--marquee);
+  border-radius: 999px; font-weight: 700; font-size: .9rem;
+}
+
