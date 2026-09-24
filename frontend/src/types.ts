@@ -13,6 +13,8 @@ export interface Movie {
   cast?: string[];
   producers?: string[];
   director?: string;
+  reviews?: string; // external reviews URL, e.g. Rotten Tomatoes
+  trailerImage?: string;
   // Raw "YYYY-MM-DD H:MM PM" strings from the Showtime table, grouped by showtimes.ts
   showtimes?: string[];
 }

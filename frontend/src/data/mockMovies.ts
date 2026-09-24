@@ -17,12 +17,15 @@ const baseMovies: Movie[] = [
   { id: 10, title: "Moonwake", genre: "Sci-Fi", rating: "PG", status: "COMING_SOON", posterUrl: "", trailerUrl: T, description: "A family on a lunar colony discovers their new home has been waiting for them." },
 ];
 
-const extras: Record<number, Pick<Movie, "cast" | "director" | "producers">> = {
-  1: { director: "Renata Cole", producers: ["Marcus Bell"], cast: ["Dana Whitlock", "Theo Marsh", "Priya Anand"] },
-  2: { director: "Elias Ward", producers: ["Naomi Fischer"], cast: ["Lucy Park", "Omar Haddad", "June Alvarez"] },
-  3: { director: "Gina Okafor", producers: ["Sam Rivera"], cast: ["Ben Toller", "Mia Chen", "Carlos Duarte"] },
-  4: { director: "Anders Holm", producers: ["Ruth Kessler"], cast: ["Ingrid Moss", "Paul Grayson", "Leah Stone"] },
-  5: { director: "Vera Lindqvist", producers: ["Jonah Pike"], cast: ["Kai Morrow", "Tessa Bright", "Dev Malhotra"] },
+// Only currently-running movies carry reviews in the seed data, so the mocks match.
+const R = "https://www.rottentomatoes.com/";
+
+const extras: Record<number, Pick<Movie, "cast" | "director" | "producers" | "reviews">> = {
+  1: { director: "Renata Cole", producers: ["Marcus Bell"], cast: ["Dana Whitlock", "Theo Marsh", "Priya Anand"], reviews: `${R}m/midnight_circuit` },
+  2: { director: "Elias Ward", producers: ["Naomi Fischer"], cast: ["Lucy Park", "Omar Haddad", "June Alvarez"], reviews: `${R}m/the_lantern_keeper` },
+  3: { director: "Gina Okafor", producers: ["Sam Rivera"], cast: ["Ben Toller", "Mia Chen", "Carlos Duarte"], reviews: `${R}m/second_helpings` },
+  4: { director: "Anders Holm", producers: ["Ruth Kessler"], cast: ["Ingrid Moss", "Paul Grayson", "Leah Stone"], reviews: `${R}m/harbor_lights` },
+  5: { director: "Vera Lindqvist", producers: ["Jonah Pike"], cast: ["Kai Morrow", "Tessa Bright", "Dev Malhotra"], reviews: `${R}m/static_bloom` },
   6: { director: "Hiro Tanaka", producers: ["Alma Reyes"], cast: ["Nadia Volkov", "Eli Frost", "Grace Adeyemi"] },
   7: { director: "Claire Dubois", producers: ["Ravi Menon"], cast: ["Sophie Lang", "Marco Bellini", "Ada Whitfield"] },
   8: { director: "Damon Reyes", producers: ["Ellie Zhang"], cast: ["Nora Blake", "Jack Ostrow", "Tamika Hayes"] },

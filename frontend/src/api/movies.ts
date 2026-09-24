@@ -38,7 +38,11 @@ function toMovie(raw: any): Movie {
     // The API nests these one level deep: {movie_id, cast: [...]} and {movie_id, producers: [...]}
     cast: toList(raw.cast?.cast ?? raw.cast),
     producers: toList(raw.producer?.producers ?? raw.producers),
-    director: raw.director ?? undefined,
+    // Not exposed by the API yet. Reads both a bare string and the nested
+    // {movie_id, director} shape the other role fields use.
+    director: raw.director?.director ?? raw.director ?? undefined,
+    reviews: raw.reviews ?? undefined,
+    trailerImage: raw.trailer_image ?? raw.trailerImage ?? undefined,
     showtimes: Array.isArray(raw.showtimes) ? raw.showtimes.map(String) : undefined,
   };
 }

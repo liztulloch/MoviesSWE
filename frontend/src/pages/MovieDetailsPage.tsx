@@ -29,6 +29,7 @@ export default function MovieDetailsPage() {
   if (!movie) return <p className="notice">We couldn't find that movie. <Link to="/">Back to movies</Link></p>;
 
   const comingSoon = movie.status === "COMING_SOON";
+  const poster = movie.posterUrl || movie.trailerImage || "";
   const dates = showDatesFor(movie);
   const activeDate = date ?? dates[0].iso;
 
@@ -45,8 +46,8 @@ export default function MovieDetailsPage() {
 
       <div className="details-top">
         <div className="poster poster-lg">
-          {movie.posterUrl ? (
-            <img src={movie.posterUrl} alt={`${movie.title} poster`} />
+          {poster ? (
+            <img src={poster} alt={`${movie.title} poster`} />
           ) : (
             <div className="poster-fallback" aria-hidden="true">{movie.title}</div>
           )}
@@ -68,6 +69,14 @@ export default function MovieDetailsPage() {
             <p><strong>Producer{movie.producers.length > 1 ? "s" : ""}:</strong> {movie.producers.join(", ")}</p>
           )}
           {movie.cast && movie.cast.length > 0 && <p><strong>Cast:</strong> {movie.cast.join(", ")}</p>}
+          {movie.reviews && (
+            <p>
+              <strong>Reviews:</strong>{" "}
+              <a href={movie.reviews} target="_blank" rel="noopener noreferrer">
+                Read reviews for {movie.title}
+              </a>
+            </p>
+          )}
 
           <h2>Showtimes</h2>
           <ShowtimeList
