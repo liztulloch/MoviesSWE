@@ -1,5 +1,3 @@
-
-CREATE DATABASE cinema_booking;
 USE cinema_booking;
 
 DROP TABLE IF EXISTS Showtime;
@@ -125,7 +123,7 @@ VALUES
         'https://www.rottentomatoes.com/m/dune_part_two#critics-reviews'
     ),
     (
-        'https://www.impawards.com/2004/posters/spider_man_two.jpg',
+        'https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p34442_p_v10_aq.jpg',
         'Spider-Man 2',
         'PG-13',
         'Peter Parker struggles to balance his personal life with his responsibilities as Spider-Man while facing Doctor Octopus.',
@@ -139,7 +137,7 @@ VALUES
     -- Coming Soon
 
     (
-        'https://www.impawards.com/2026/posters/clayface.jpg',
+        'https://resizing.flixster.com/L4FFhrg4cS3UwcUFr9sHyEE_nlY=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2EzMDNkYmUyLTk4NzMtNDRkMS04Mjc4LWQ3NGU1MjNjMGQzMi5qcGc=',
         'Clayface',
         'R',
         'Matt Hagen''s rise from Gotham street kid to Hollywood leading man is cut short when he is horribly disfigured. A cutting-edge treatment restores his appearance but unexpectedly affects his grip on reality.',
@@ -150,7 +148,7 @@ VALUES
         NULL
     ),
     (
-        'https://www.impawards.com/2026/posters/street_fighter.jpg',
+        'https://resizing.flixster.com/HI64aC1g5q3IEbUvYxwC7aD2k8E=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzBmZTYzOGEwLTRjMTQtNDcxYS1hMzY3LTUwOTI5OGQ1OTI0Ny5qcGc=',
         'Street Fighter',
         NULL,
         'Estranged fighters Ryu and Ken Masters are thrown back into combat when Chun-Li recruits them for the World Warrior Tournament, where a deadly conspiracy awaits.',
@@ -161,7 +159,7 @@ VALUES
         NULL
     ),
     (
-        'https://www.impawards.com/2026/posters/hunger_games_sunrise_on_the_reaping.jpg',
+        'https://resizing.flixster.com/dKU6Pe1P3KPx74Z_y3aX98rn4T4=/fit-in/352x330/v2/https://resizing.flixster.com/1t7u88QXOet-KAWbng7yel34DjY=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzZlODBlNGU2LWIxN2YtNGNiMC04ZGE0LWFjZDFmNTI5YTVmNC5qcGc=',
         'The Hunger Games: Sunrise on the Reaping',
         NULL,
         'Twenty-four years before the events of The Hunger Games, a young Haymitch Abernathy is selected to compete in the 50th Hunger Games, also known as the Second Quarter Quell.',
@@ -172,7 +170,7 @@ VALUES
         NULL
     ),
     (
-        'https://www.impawards.com/2026/posters/avengers_doomsday.jpg',
+        'https://m.media-amazon.com/images/M/MV5BNGEwYWZkN2UtOTQ5Mi00MGQzLWEzNjYtMWMyNDBkMTkzMWNkXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg',
         'Avengers: Doomsday',
         NULL,
         'Heroes from three distinct universes are set on a deadly collision course as they face an existential threat unlike anything they have encountered before.',
@@ -183,7 +181,7 @@ VALUES
         NULL
     ),
     (
-        'https://www.impawards.com/2026/posters/dune_part_three.jpg',
+        'https://resizing.flixster.com/_iIt4XxdnDsIgXQ3I2U-x0Xj_70=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2VkN2QzNWJhLTcyMzgtNDlkMS05NDZkLWJiZjE4ZGViZjNhNC5qcGc=',
         'Dune: Part Three',
         NULL,
         'Nearly two decades after Paul Atreides seized control of the Imperium, he must face the consequences of his reign as old allies return, new threats emerge, and betrayal lurks in every shadow.',
@@ -194,7 +192,7 @@ VALUES
         NULL
     ),
     (
-        'https://www.impawards.com/2026/posters/angry_birds_movie_three.jpg',
+        'https://resizing.flixster.com/bI1UsSOuibnXKuyDqGX6-eOpxps=/fit-in/352x330/v2/https://resizing.flixster.com/2uORLUCFbTg2oV26tr-C4oevoC0=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzFmYWEyMGNmLWJkMGUtNGNjNC1hNzIzLTc5ODc4M2JlMDEzYS5qcGc=',
         'The Angry Birds Movie 3',
         NULL,
         'Red faces his greatest challenge yet as he attempts to survive fatherhood while once again saving the world.',
@@ -340,12 +338,8 @@ VALUES
 INSERT INTO Showtime
     (movie_id, hall_id, show_date, show_time)
 VALUES
-<<<<<<< HEAD
-    
-=======
 
  
->>>>>>> db
     (1, 1, '2026-09-26', '1:00 PM'),
     (1, 1, '2026-09-26', '5:00 PM'),
     (1, 1, '2026-09-26', '9:00 PM'),
@@ -353,11 +347,7 @@ VALUES
     (1, 2, '2026-09-26', '7:00 PM'),
     (1, 3, '2026-09-26', '6:00 PM'),
 
-<<<<<<< HEAD
-
-=======
   
->>>>>>> db
     (2, 1, '2026-09-26', '2:00 PM'),
     (2, 1, '2026-09-26', '6:00 PM'),
     (2, 1, '2026-09-26', '9:30 PM'),
@@ -390,12 +380,7 @@ VALUES
     (5, 3, '2026-09-26', '6:30 PM'),
 
     
-<<<<<<< HEAD
-    (6, 1, '2026-09-26', '1:00 PM'),
-    (6, 1, '2026-09-26', '4:00 PM'),
-=======
     (6, 1, '2026-09-26', '3:00 PM'),
->>>>>>> db
     (6, 1, '2026-09-26', '7:00 PM'),
     (6, 1, '2026-09-26', '10:00 PM'),
     (6, 2, '2026-09-26', '3:00 PM'),
@@ -403,20 +388,15 @@ VALUES
     (6, 3, '2026-09-26', '8:30 PM'),
 
     
-<<<<<<< HEAD
-    (1, 1, '2026-09-27', '2:00 PM'),
-    (1, 2, '2026-09-27', '7:00 PM'),
-
-=======
 
     
     (1, 1, '2026-09-27', '2:00 PM'),
     (1, 2, '2026-09-27', '7:00 PM'),
 
     
->>>>>>> db
     (2, 1, '2026-09-27', '3:00 PM'),
     (2, 3, '2026-09-27', '8:00 PM'),
+
 
     (3, 1, '2026-09-27', '4:00 PM'),
     (3, 2, '2026-09-27', '8:30 PM'),
@@ -424,16 +404,10 @@ VALUES
     
     (4, 1, '2026-09-27', '5:00 PM'),
 
-<<<<<<< HEAD
-    (5, 2, '2026-09-27', '2:30 PM'),
-    (5, 3, '2026-09-27', '7:30 PM'),
-
-=======
     
     (5, 2, '2026-09-27', '2:30 PM'),
     (5, 3, '2026-09-27', '7:30 PM'),
 
     
->>>>>>> db
     (6, 1, '2026-09-27', '1:30 PM'),
     (6, 2, '2026-09-27', '6:00 PM');
