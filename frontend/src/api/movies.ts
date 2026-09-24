@@ -83,8 +83,10 @@ export async function getMovies(query: MovieQuery = {}): Promise<Movie[]> {
   return [...running, ...soon].map(toMovie);
 }
 
-// The API has no GET /movies/{id}, so the full list is fetched and filtered here.
 export async function getMovie(id: number): Promise<Movie | null> {
   if (USE_MOCK) return mockMovies.find((m) => m.id === id) ?? null;
-  return (await getMovies()).find((m) => m.id === id) ?? null;
+  const res = await fetch(`${API_URL}/movies/${id}`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Could not load this movie (error ${res.status}).`);
+  return toMovie(await res.json());
 }
