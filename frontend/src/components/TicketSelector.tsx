@@ -7,6 +7,8 @@ interface Props {
 
 const LABELS: Record<TicketType, string> = { adult: "Adult", child: "Child", senior: "Senior" };
 
+// The + and - buttons for adult, child, and senior tickets, with each price.
+// Makes one row for each type in TICKET_PRICES.
 export default function TicketSelector({ counts, onChange }: Props) {
   return (
     <div className="tickets">

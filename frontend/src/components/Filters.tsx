@@ -8,6 +8,8 @@ interface Props {
   onClear: () => void;
 }
 
+// Search box, genre dropdown, and show date picker on the home page.
+// HomePage keeps the values and does the actual searching.
 export default function Filters({ title, genre, onTitleChange, onGenreChange, onClear }: Props) {
   const active = title !== "" || genre !== "";
   return (

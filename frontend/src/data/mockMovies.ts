@@ -3,7 +3,8 @@ import type { Movie } from "../types";
 // Placeholder trailer ID
 const T = "M7lc1UVf-VE";
 
-// Sample data to use befoe backend is ready.
+// Sample movies, only used in mock mode (when VITE_USE_MOCK is not "false").
+// The real site gets its movies from the database.
 const baseMovies: Movie[] = [
   { id: 1, title: "Midnight Circuit", genre: "Action", rating: "PG-13", status: "CURRENTLY_RUNNING", posterUrl: "", trailerUrl: T, description: "A retired courier is pulled back into the city's underground race scene when her brother goes missing." },
   { id: 2, title: "The Lantern Keeper", genre: "Animation", rating: "PG", status: "CURRENTLY_RUNNING", posterUrl: "", trailerUrl: T, description: "A young apprentice must relight the village lanterns before the longest night of the year." },

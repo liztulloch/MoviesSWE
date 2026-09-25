@@ -1,3 +1,4 @@
+// Turns showtimes into the date and time lists the pickers show.
 import { SHOWTIMES, type Movie, type MovieStatus } from "./types";
 
 export interface ShowDate {
@@ -36,7 +37,7 @@ function toMinutes(time: string): number {
   return (hour + (pm ? 12 : 0)) * 60 + Number(m[2]);
 }
 
-// Several halls can run the same movie at the same time, so times are de-duplicated.
+// Several halls can run the same movie at the same time, so times are de duplicated.
 export function groupShowtimes(stamps: string[]): ShowDate[] {
   const byDate = new Map<string, Set<string>>();
   for (const stamp of stamps) {
@@ -66,8 +67,7 @@ export function getShowDates(status: MovieStatus, count = 3): ShowDate[] {
   });
 }
 
-// Coming-soon movies have no rows in the Showtime table, so they fall back to
-// the hardcoded sprint-1 times rather than showing an empty picker.
+// Coming soon movies have no rows in the Showtime table
 export function showDatesFor(movie: Movie): ShowDate[] {
   const scheduled = groupShowtimes(movie.showtimes ?? []);
   return scheduled.length > 0 ? scheduled : getShowDates(movie.status);

@@ -1,5 +1,5 @@
-// Plain JavaScript helper (allowJs is on in the Vite TS template, so JS and TS can live together).
-// Accepts a YouTube watch URL, youtu.be URL, embed URL, or a bare 11-character ID.
+// Plain JavaScript helper. utils.d.ts next to it tells TypeScript what this function takes and returns.
+// Turns any YouTube link into the embed link the trailer player needs. Returns "" if it isn't a YouTube link.
 export function toEmbedUrl(input) {
   if (!input) return "";
   const match =

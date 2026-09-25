@@ -6,6 +6,8 @@ import type { Movie } from "../types";
 import ShowtimeList from "../components/ShowtimeList";
 import TrailerPlayer from "../components/TrailerPlayer";
 
+// Movie details page: poster, info, showtimes, and trailer.
+// Picking a date and time shows the Book button, which opens the booking page.
 export default function MovieDetailsPage() {
   const { id } = useParams();
   const [movie, setMovie] = useState<Movie | null>(null);
@@ -14,6 +16,7 @@ export default function MovieDetailsPage() {
   const [date, setDate] = useState<string | null>(null);
   const [showtime, setShowtime] = useState<string | null>(null);
 
+  // Load the movie from the backend using the id in the URL.
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -33,9 +36,7 @@ export default function MovieDetailsPage() {
   const dates = showDatesFor(movie);
   const activeDate = date ?? dates[0].iso;
 
-  // Each date has its own times, so a held-over selection could point at a time
-  // the new date doesn't offer.
-  const selectDate = (iso: string) => {
+    const selectDate = (iso: string) => {
     setDate(iso);
     setShowtime(null);
   };

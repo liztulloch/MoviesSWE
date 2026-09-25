@@ -1,7 +1,8 @@
+// The only file that talks to the backend. Pages call these functions instead of using fetch().
 import type { Movie } from "../types";
 import { mockMovies } from "../data/mockMovies";
 
-// Set these in .env.local. Set VITE_USE_MOCK=false once the backend is running.
+// Settings come from frontend/.env. VITE_USE_MOCK=false means use the real backend.
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
@@ -35,11 +36,8 @@ function toMovie(raw: any): Movie {
       status.includes("soon") || status.includes("upcoming")
         ? "COMING_SOON"
         : "CURRENTLY_RUNNING",
-    // The API nests these one level deep: {movie_id, cast: [...]} and {movie_id, producers: [...]}
     cast: toList(raw.cast?.cast ?? raw.cast),
     producers: toList(raw.producer?.producers ?? raw.producers),
-    // Not exposed by the API yet. Reads both a bare string and the nested
-    // {movie_id, director} shape the other role fields use.
     director: raw.director?.director ?? raw.director ?? undefined,
     reviews: raw.reviews ?? undefined,
     trailerImage: raw.trailer_image ?? raw.trailerImage ?? undefined,
@@ -53,6 +51,7 @@ async function get(path: string): Promise<any[]> {
   return res.json();
 }
 
+// Home page movies, filtered by title and/or genre. The database does the filtering.
 export async function getMovies(query: MovieQuery = {}): Promise<Movie[]> {
   const title = query.title?.trim();
 
@@ -68,13 +67,13 @@ export async function getMovies(query: MovieQuery = {}): Promise<Movie[]> {
   const params = new URLSearchParams();
   if (query.genre) params.set("genre", query.genre);
 
-  // /search spans both statuses but requires a name, so it can't serve an empty query.
+  // /search covers both statuses but can't handle an empty search box.
   if (title) {
     params.set("name", title);
     return (await get(`/movies/search?${params}`)).map(toMovie);
   }
 
-  // There is no "list all" endpoint, so both status endpoints are fetched together.
+  // There is no list all route, so both status lists are fetched together.
   const suffix = params.toString() ? `?${params}` : "";
   const [running, soon] = await Promise.all([
     get(`/movies/currently-running${suffix}`),
@@ -83,6 +82,7 @@ export async function getMovies(query: MovieQuery = {}): Promise<Movie[]> {
   return [...running, ...soon].map(toMovie);
 }
 
+// One movie by id, or null if it doesn't exist.
 export async function getMovie(id: number): Promise<Movie | null> {
   if (USE_MOCK) return mockMovies.find((m) => m.id === id) ?? null;
   const res = await fetch(`${API_URL}/movies/${id}`);

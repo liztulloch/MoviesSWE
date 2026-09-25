@@ -23,6 +23,7 @@ export default function BookingPage() {
     getMovie(Number(id)).then(setMovie).finally(() => setLoading(false));
   }, [id]);
 
+  // Total price: number of tickets of each type times that type's price.
   const ticketTotal = counts.adult + counts.child + counts.senior;
   const price = useMemo(
     () => (Object.keys(counts) as TicketType[]).reduce((sum, t) => sum + counts[t] * TICKET_PRICES[t], 0),
