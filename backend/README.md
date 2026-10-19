@@ -58,3 +58,19 @@ When a query returns no results the API sets an `X-Message: No movies found` hea
 - `pymysql.err.OperationalError (1045)` — check `DATABASE_URL` credentials.
 - If you want me to seed a local `sqlite` database with sample data, ask and I will add a small seed script.
  
+
+
+
+ BACKEND-1  Implement password hashing
+BACKEND-2  Implement login endpoint
+BACKEND-3  Implement authentication/session handling
+BACKEND-4  Implement role-based authorization
+BACKEND-5  Implement logout
+BACKEND-6  Implement forgot-password request
+BACKEND-7  Implement password-reset token flow
+BACKEND-8  Implement authenticated change-password
+BACKEND-9  Implement payment-card encryption
+BACKEND-10 Enforce maximum 3 payment cards
+BACKEND-11 Implement profile-update notification email
+BACKEND-12 Create demo seed data
+BACKEND-13 Add authentication/security integration tests
