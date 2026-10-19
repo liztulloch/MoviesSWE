@@ -1,34 +1,52 @@
-USE cinema_booking;
 
-DROP TABLE IF EXISTS Showtime;
-DROP TABLE IF EXISTS MovieRole;
-DROP TABLE IF EXISTS TheaterHall;
-DROP TABLE IF EXISTS Person;
-DROP TABLE IF EXISTS Movie;
+CREATE SCHEMA IF NOT EXISTS `cinema_booking`;
+USE `cinema_booking`;
+
+
+CREATE SCHEMA IF NOT EXISTS `cinema_booking`;
+USE `cinema_booking`;
+
+DROP TABLE IF EXISTS `Ticket`;
+DROP TABLE IF EXISTS `ShowSeat`;
+DROP TABLE IF EXISTS `FavoriteMovie`;
+DROP TABLE IF EXISTS `Recommendation`;
+DROP TABLE IF EXISTS `CreditCard`;
+DROP TABLE IF EXISTS `Booking`;
+DROP TABLE IF EXISTS `Promotion`;
+DROP TABLE IF EXISTS `Admin`;
+DROP TABLE IF EXISTS `Customer`;
+DROP TABLE IF EXISTS `User`;
+DROP TABLE IF EXISTS `Seat`;
+DROP TABLE IF EXISTS `Showtime`;
+DROP TABLE IF EXISTS `MovieRole`;
+DROP TABLE IF EXISTS `TheaterHall`;
+DROP TABLE IF EXISTS `Person`;
+DROP TABLE IF EXISTS `Movie`;
+
 
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`Movie` (
-  `movie_id` INT NOT NULL AUTO_INCREMENT,
-  `poster` VARCHAR(500) NULL,
-  `title` VARCHAR(255) NOT NULL,
-  `mpaa_rating` VARCHAR(10) NULL,
-  `synopsis` TEXT NULL,
-  `genre` VARCHAR(100) NULL,
-  `status` VARCHAR(50) NOT NULL,
-  `trailer_image` VARCHAR(500) NULL,
-  `trailer` VARCHAR(500) NULL,
-  `reviews` VARCHAR(500) NULL,
-  PRIMARY KEY (`movie_id`))
-ENGINE = InnoDB;
+    `movie_id` INT NOT NULL AUTO_INCREMENT,
+    `poster` VARCHAR(500) NULL,
+    `title` VARCHAR(255) NOT NULL,
+    `mpaa_rating` VARCHAR(10) NULL,
+    `synopsis` TEXT NULL,
+    `genre` VARCHAR(255) NOT NULL,
+    `status` VARCHAR(50) NOT NULL,
+    `trailer_image` VARCHAR(500) NULL,
+    `trailer` VARCHAR(500) NULL,
+    `reviews` VARCHAR(500) NULL,
+    PRIMARY KEY (`movie_id`)
+) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`Person` (
-	`person_id` INT NOT NULL AUTO_INCREMENT,
+    `person_id` INT NOT NULL AUTO_INCREMENT,
     `first_name` VARCHAR(100) NOT NULL,
     `last_name` VARCHAR(100) NOT NULL,
-    PRIMARY KEY (`person_id`))
-ENGINE = InnoDB;
+    PRIMARY KEY (`person_id`)
+) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`MovieRole` (
-	`movie_id` INT NOT NULL,
+    `movie_id` INT NOT NULL,
     `person_id` INT NOT NULL,
     `role` VARCHAR(50) NOT NULL,
     `character_name` VARCHAR(255) NULL,
@@ -37,32 +55,200 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`MovieRole` (
         REFERENCES `cinema_booking`.`Movie` (`movie_id`),
     FOREIGN KEY (`person_id`)
         REFERENCES `cinema_booking`.`Person` (`person_id`)
-)
-ENGINE = InnoDB;
-
+) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`TheaterHall` (
-  `hall_id` INT NOT NULL AUTO_INCREMENT,
-  `hall_number` INT NOT NULL,
-  PRIMARY KEY (`hall_id`),
-  UNIQUE (`hall_number`))
-ENGINE = InnoDB;
+    `hall_id` INT NOT NULL AUTO_INCREMENT,
+    `hall_number` INT NOT NULL,
+    PRIMARY KEY (`hall_id`),
+    UNIQUE (`hall_number`)
+) ENGINE = InnoDB;
 
-
-CREATE TABLE IF NOT EXISTS `cinema_booking`.`Showtime`(
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`Showtime` (
     `showtime_id` INT NOT NULL AUTO_INCREMENT,
     `movie_id` INT NOT NULL,
     `hall_id` INT NOT NULL,
     `show_date` DATE NOT NULL,
     `show_time` VARCHAR(10) NOT NULL,
-
     PRIMARY KEY (`showtime_id`),
     UNIQUE (`hall_id`, `show_date`, `show_time`),
+    FOREIGN KEY (`movie_id`)
+        REFERENCES `cinema_booking`.`Movie` (`movie_id`),
+    FOREIGN KEY (`hall_id`)
+        REFERENCES `cinema_booking`.`TheaterHall` (`hall_id`)
+) ENGINE = InnoDB;
 
-    FOREIGN KEY (`movie_id`) REFERENCES Movie(`movie_id`),
-    FOREIGN KEY (`hall_id`) REFERENCES TheaterHall(`hall_id`)
-)
-ENGINE = InnoDB;
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`Seat` (
+    `seat_id` INT NOT NULL AUTO_INCREMENT,
+    `seat_number` INT NOT NULL,
+    `hall_id` INT NOT NULL,
+    PRIMARY KEY (seat_id),
+	UNIQUE (hall_id, seat_number),
+    INDEX `fk_Seat_theaterhall1_idx` (`hall_id`),
+    CONSTRAINT `fk_Seat_theaterhall1`
+        FOREIGN KEY (`hall_id`)
+        REFERENCES `cinema_booking`.`TheaterHall` (`hall_id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`ShowSeat` (
+    `show_seat_id` INT NOT NULL AUTO_INCREMENT,
+    `status` VARCHAR(20) NOT NULL,
+    `seat_id` INT NOT NULL,
+    `showtime_id` INT NOT NULL,
+    PRIMARY KEY (`show_seat_id`),
+    INDEX `fk_seat_seat1_idx` (`seat_id`),
+    INDEX `fk_showseat_showtime1_idx` (`showtime_id`),
+    UNIQUE (`showtime_id`, `seat_id`),
+    CONSTRAINT `fk_seat_seat1`
+        FOREIGN KEY (`seat_id`)
+        REFERENCES `cinema_booking`.`Seat` (`seat_id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION,
+    CONSTRAINT `fk_showseat_showtime1`
+        FOREIGN KEY (`showtime_id`)
+        REFERENCES `cinema_booking`.`Showtime` (`showtime_id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`User` (
+    `user_id` INT NOT NULL AUTO_INCREMENT,
+    `first_name` VARCHAR(500) NOT NULL,
+    `last_name` VARCHAR(500) NOT NULL,
+    `email` VARCHAR(500) NOT NULL,
+    `password` VARCHAR(300) NOT NULL,
+    PRIMARY KEY (`user_id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`Customer` (
+    `mailing_address` VARCHAR(200) NOT NULL,
+    `customer_id` INT NOT NULL,
+    `status` ENUM(
+        'Active',
+        'Inactive',
+        'Suspended'
+    ) NOT NULL DEFAULT 'Active',
+    PRIMARY KEY (`customer_id`),
+    CONSTRAINT `fk_customer_user1`
+        FOREIGN KEY (`customer_id`)
+        REFERENCES `cinema_booking`.`User` (`user_id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`Admin` (
+    `admin_id` INT NOT NULL,
+    PRIMARY KEY (`admin_id`),
+    CONSTRAINT `fk_admin_user1`
+        FOREIGN KEY (`admin_id`)
+        REFERENCES `cinema_booking`.`User` (`user_id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`Promotion` (
+    `promo_code` VARCHAR(20) NOT NULL,
+    `discount` DOUBLE NOT NULL,
+    `valid` TINYINT NOT NULL,
+    PRIMARY KEY (`promo_code`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`Booking` (
+    `booking_Id` INT NOT NULL AUTO_INCREMENT,
+    `total` DECIMAL(10,2) NOT NULL,
+    `customer_id` INT NOT NULL,
+    `promo_code` VARCHAR(20) NULL,
+    PRIMARY KEY (`booking_Id`),
+    INDEX `fk_booking_customer1_idx` (`customer_id`),
+    INDEX `fk_booking_promotion1_idx` (`promo_code`),
+    CONSTRAINT `fk_booking_customer1`
+        FOREIGN KEY (`customer_id`)
+        REFERENCES `cinema_booking`.`Customer` (`customer_id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION,
+    CONSTRAINT `fk_booking_promotion1`
+        FOREIGN KEY (`promo_code`)
+        REFERENCES `cinema_booking`.`Promotion` (`promo_code`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`Ticket` (
+    `ticket_id` INT NOT NULL AUTO_INCREMENT,
+    `show_seat_id` INT NOT NULL,
+    `price` DECIMAL(10,2) NOT NULL,
+    `booking_Id` INT NOT NULL,
+    `ticket_type` ENUM(
+        'Adult',
+        'Child',
+        'Senior'
+    ) NOT NULL,
+    PRIMARY KEY (`ticket_id`),
+    INDEX `fk_Ticket_showseat1_idx` (`show_seat_id`),
+    INDEX `fk_Ticket_booking1_idx` (`booking_Id`),
+    CONSTRAINT `fk_Ticket_showseat1`
+        FOREIGN KEY (`show_seat_id`)
+        REFERENCES `cinema_booking`.`ShowSeat` (`show_seat_id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION,
+    CONSTRAINT `fk_Ticket_booking1`
+        FOREIGN KEY (`booking_Id`)
+        REFERENCES `cinema_booking`.`Booking` (`booking_Id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`FavoriteMovie` (
+    `movie_rank` INT NOT NULL,
+    `customer_id` INT NOT NULL,
+    `movie_id` INT NOT NULL,
+    PRIMARY KEY (`customer_id`, `movie_id`),
+    INDEX `fk_favoritemovie_movie1_idx` (`movie_id`),
+    CONSTRAINT `fk_favoritemovie_customer1`
+        FOREIGN KEY (`customer_id`)
+        REFERENCES `cinema_booking`.`Customer` (`customer_id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION,
+    CONSTRAINT `fk_favoritemovie_movie1`
+        FOREIGN KEY (`movie_id`)
+        REFERENCES `cinema_booking`.`Movie` (`movie_id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`Recommendation` (
+    `preferences` JSON NULL,
+    `customer_id` INT NOT NULL,
+    `movie_id` INT NOT NULL,
+    PRIMARY KEY (`customer_id`, `movie_id`),
+    CONSTRAINT `fk_recommendation_customer1`
+        FOREIGN KEY (`customer_id`)
+        REFERENCES `cinema_booking`.`Customer` (`customer_id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION,
+    CONSTRAINT `fk_recommendation_movie1`
+        FOREIGN KEY (`movie_id`)
+        REFERENCES `cinema_booking`.`Movie` (`movie_id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`CreditCard` (
+    `customer_id` INT NOT NULL,
+    `card_number` INT NOT NULL,
+    `billing_address` VARCHAR(200) NOT NULL,
+    `expiration_date` DATE NOT NULL,
+    PRIMARY KEY (`card_number`),
+    CONSTRAINT `fk_creditcard_customer1`
+        FOREIGN KEY (`customer_id`)
+        REFERENCES `cinema_booking`.`Customer` (`customer_id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
+
 INSERT INTO Movie
     (poster, title, mpaa_rating, synopsis, genre, status,
      trailer_image, trailer, reviews)
