@@ -10,6 +10,8 @@ interface Props {
   locked: boolean;
 }
 
+// The seat layout on the booking page. Builds rows A to H with 10 seats each.
+// BookingPage decides which seats are picked. This just draws them.
 export default function SeatMap({ selected, onToggle, locked }: Props) {
   return (
     <div className="seatmap">

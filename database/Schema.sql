@@ -2,10 +2,6 @@
 CREATE SCHEMA IF NOT EXISTS `cinema_booking`;
 USE `cinema_booking`;
 
-
-CREATE SCHEMA IF NOT EXISTS `cinema_booking`;
-USE `cinema_booking`;
-
 DROP TABLE IF EXISTS `Ticket`;
 DROP TABLE IF EXISTS `ShowSeat`;
 DROP TABLE IF EXISTS `FavoriteMovie`;
@@ -129,7 +125,10 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`Customer` (
         'Active',
         'Inactive',
         'Suspended'
-    ) NOT NULL DEFAULT 'Active',
+    ) NOT NULL DEFAULT 'Inactive',
+    `confirmation_code` INT,
+    `reset_code` INT,
+    `receive_promotion` BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY (`customer_id`),
     CONSTRAINT `fk_customer_user1`
         FOREIGN KEY (`customer_id`)
@@ -171,8 +170,8 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`Booking` (
     CONSTRAINT `fk_booking_promotion1`
         FOREIGN KEY (`promo_code`)
         REFERENCES `cinema_booking`.`Promotion` (`promo_code`)
-        ON DELETE NO ACTION
-        ON UPDATE NO ACTION
+		ON DELETE SET NULL
+        ON UPDATE CASCADE
 ) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`Ticket` (
@@ -244,7 +243,7 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`CreditCard` (
     CONSTRAINT `fk_creditcard_customer1`
         FOREIGN KEY (`customer_id`)
         REFERENCES `cinema_booking`.`Customer` (`customer_id`)
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         ON UPDATE NO ACTION
 ) ENGINE = InnoDB;
 

@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 import { showDatesFor } from "../showtimes";
 import type { Movie } from "../types";
 
+// One movie on the home page. poster and title (links to details) plus quick showtime buttons.
 export default function MovieCard({ movie }: { movie: Movie }) {
-  // Coming-soon movies have no rating, so the separator would otherwise dangle.
   const meta = [movie.rating, movie.genre].filter(Boolean).join(" · ");
   const next = showDatesFor(movie)[0];
 
@@ -26,7 +26,7 @@ export default function MovieCard({ movie }: { movie: Movie }) {
       {next && (
         <>
           <p className="meta">{next.label}</p>
-          {/* Sibling of the card link, not nested inside it — anchors can't nest. */}
+          {/* Kept outside the card link because a link can't go inside another link. */}
           <div className="card-showtimes">
             {next.times.slice(0, 3).map((t) => (
               <Link

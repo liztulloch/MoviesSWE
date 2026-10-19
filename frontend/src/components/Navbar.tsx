@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 
+// Top bar with the site name. Clicking it goes back to the home page.
 export default function Navbar() {
   return (
     <header className="navbar">

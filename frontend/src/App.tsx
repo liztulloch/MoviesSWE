@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import MovieDetailsPage from "./pages/MovieDetailsPage";
 import BookingPage from "./pages/BookingPage";
 
+// Sets up the pages and which URL shows each one. The Navbar shows on every page.
 export default function App() {
   return (
     <>

@@ -4,6 +4,7 @@ import type { Movie } from "../types";
 import Filters from "../components/Filters";
 import MovieSection from "../components/MovieSection";
 
+// Home page: search and filter bar, then movies split into "Currently running" and "Coming soon".
 export default function HomePage() {
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState("");
@@ -11,7 +12,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Restart query when search or genre changes
+  // Ask the backend again whenever the search text or genre changes.
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -25,6 +26,8 @@ export default function HomePage() {
   }, [title, genre]);
 
   const clear = () => { setTitle(""); setGenre(""); };
+
+  // Split one list into the two home page sections using the status column from the DB.
   const running = movies.filter((m) => m.status === "CURRENTLY_RUNNING");
   const soon = movies.filter((m) => m.status === "COMING_SOON");
 
@@ -40,6 +43,7 @@ export default function HomePage() {
       {error && <p className="notice notice-error" role="alert">{error} Check that the backend is running.</p>}
       {loading && !error && <p className="notice">Loading movies…</p>}
 
+      {/* Shown when the search or filter finds nothing */}
       {!loading && !error && movies.length === 0 && (
         <div className="empty">
           <h2>No movies match your search</h2>

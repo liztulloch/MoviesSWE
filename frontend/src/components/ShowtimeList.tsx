@@ -8,7 +8,9 @@ interface Props {
   onSelectTime: (t: string) => void;
 }
 
+// Date buttons and time buttons on the details page.
 export default function ShowtimeList({ dates, selectedDate, onSelectDate, selectedTime, onSelectTime }: Props) {
+  // Only show the times for the date that is picked.
   const times = dates.find((d) => d.iso === selectedDate)?.times ?? [];
 
   return (

@@ -6,6 +6,7 @@ interface Props {
   movies: Movie[];
 }
 
+// A titled grid of movie cards, like "Currently running" and hidden when no movies
 export default function MovieSection({ title, movies }: Props) {
   if (movies.length === 0) return null;
   const headingId = `sec-${title.replace(/\s+/g, "-").toLowerCase()}`;
