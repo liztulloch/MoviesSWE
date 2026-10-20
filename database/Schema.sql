@@ -113,7 +113,8 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`User` (
     `user_id` INT NOT NULL AUTO_INCREMENT,
     `first_name` VARCHAR(500) NOT NULL,
     `last_name` VARCHAR(500) NOT NULL,
-    `email` VARCHAR(500) NOT NULL,
+    `email` VARCHAR(500) NULL,
+    `phone_number` VARCHAR(20) NULL,
     `password` VARCHAR(300) NOT NULL,
     PRIMARY KEY (`user_id`)
 ) ENGINE = InnoDB;
@@ -126,8 +127,8 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`Customer` (
         'Inactive',
         'Suspended'
     ) NOT NULL DEFAULT 'Inactive',
-    `confirmation_code` INT,
-    `reset_code` INT,
+    `confirmation_code` VARCHAR(100),
+    `reset_code` VARCHAR(100),
     `receive_promotion` BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY (`customer_id`),
     CONSTRAINT `fk_customer_user1`
@@ -235,11 +236,12 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`Recommendation` (
 ) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`CreditCard` (
+	`card_id` INT NOT NULL auto_increment,
     `customer_id` INT NOT NULL,
-    `card_number` INT NOT NULL,
+    `card_number` varchar(100) NOT NULL,
     `billing_address` VARCHAR(200) NOT NULL,
     `expiration_date` DATE NOT NULL,
-    PRIMARY KEY (`card_number`),
+    PRIMARY KEY (`card_ID`),
     CONSTRAINT `fk_creditcard_customer1`
         FOREIGN KEY (`customer_id`)
         REFERENCES `cinema_booking`.`Customer` (`customer_id`)
@@ -596,3 +598,215 @@ VALUES
     
     (6, 1, '2026-09-27', '1:30 PM'),
     (6, 2, '2026-09-27', '6:00 PM');
+    
+    INSERT INTO `User`
+(first_name, last_name, email, phone_number, password)
+VALUES
+('John', 'Smith', 'john.smith@example.com', '7065550101', 'test_hash_1'),
+('Emily', 'Johnson', 'emily.johnson@example.com', '7065550102', 'test_hash_2'),
+('Michael', 'Brown', 'michael.brown@example.com', NULL, 'test_hash_3'),
+('Sarah', 'Davis', NULL, '7065550104', 'test_hash_4'),
+('David', 'Wilson', 'david.wilson@example.com', '7065550105', 'test_hash_5'),
+('Jessica', 'Miller', 'jessica.miller@example.com', NULL, 'test_hash_6'),
+('Robert', 'Taylor', 'robert.taylor@example.com', '7065550107', 'test_hash_7'),
+('Admin', 'Manager', 'admin@example.com', '7065550199', 'admin_test_hash');
+
+-- =============================================
+-- 2. CUSTOMERS
+-- Users 1-7 are customers
+-- =============================================
+
+INSERT INTO Customer
+(customer_id, mailing_address, status,
+ confirmation_code, reset_code, receive_promotion)
+VALUES
+(1, '100 Main St, Athens, GA', 'Active', NULL, NULL, TRUE),
+(2, '200 Broad St, Athens, GA', 'Active', NULL, NULL, TRUE),
+(3, '300 College Ave, Athens, GA', 'Active', NULL, NULL, FALSE),
+(4, '400 Baxter St, Athens, GA', 'Inactive', 'CONFIRM004', NULL, FALSE),
+(5, '500 Milledge Ave, Athens, GA', 'Active', NULL, NULL, TRUE),
+(6, '600 Lumpkin St, Athens, GA', 'Suspended', NULL, NULL, FALSE),
+(7, '700 Prince Ave, Athens, GA', 'Active', NULL, 'RESET007', TRUE);
+
+-- =============================================
+-- 3. ADMIN
+-- User 8 is an administrator
+-- =============================================
+
+INSERT INTO Admin (admin_id)
+VALUES (8);
+
+-- =============================================
+-- 4. PROMOTIONS
+-- =============================================
+
+INSERT INTO Promotion
+(promo_code, discount, valid)
+VALUES
+('WELCOME10', 0.10, 1),
+('STUDENT15', 0.15, 1),
+('FAMILY20', 0.20, 1),
+('EXPIRED25', 0.25, 0),
+('MOVIENIGHT', 0.05, 1);
+
+-- =============================================
+-- 5. SEATS
+-- 20 physical seats per theater hall
+-- =============================================
+
+INSERT INTO Seat (seat_number, hall_id)
+SELECT n.seat_number, h.hall_id
+FROM TheaterHall h
+CROSS JOIN (
+    SELECT 1 AS seat_number UNION ALL
+    SELECT 2 UNION ALL SELECT 3 UNION ALL
+    SELECT 4 UNION ALL SELECT 5 UNION ALL
+    SELECT 6 UNION ALL SELECT 7 UNION ALL
+    SELECT 8 UNION ALL SELECT 9 UNION ALL
+    SELECT 10 UNION ALL SELECT 11 UNION ALL
+    SELECT 12 UNION ALL SELECT 13 UNION ALL
+    SELECT 14 UNION ALL SELECT 15 UNION ALL
+    SELECT 16 UNION ALL SELECT 17 UNION ALL
+    SELECT 18 UNION ALL SELECT 19 UNION ALL
+    SELECT 20
+) n;
+
+-- =============================================
+-- 6. SHOWSEAT
+-- Create availability for every seat
+-- in every showtime in its physical hall
+-- =============================================
+
+INSERT INTO ShowSeat
+(status, seat_id, showtime_id)
+SELECT
+    'Available',
+    s.seat_id,
+    sh.showtime_id
+FROM Showtime sh
+JOIN Seat s ON sh.hall_id = s.hall_id;
+
+-- =============================================
+-- 7. BOOKINGS
+-- =============================================
+
+INSERT INTO Booking
+(total, customer_id, promo_code)
+VALUES
+(25.00, 1, NULL),
+(22.50, 2, 'WELCOME10'),
+(15.00, 3, NULL),
+(30.00, 5, 'STUDENT15'),
+(12.50, 7, NULL);
+
+-- =============================================
+-- 8. TICKETS
+-- Use real ShowSeat records from showtimes
+-- =============================================
+
+INSERT INTO Ticket
+(show_seat_id, price, booking_Id, ticket_type)
+SELECT ss.show_seat_id, 12.50, 1, 'Adult'
+FROM ShowSeat ss
+JOIN Seat s ON ss.seat_id = s.seat_id
+WHERE ss.showtime_id = 1 AND s.seat_number = 1;
+
+INSERT INTO Ticket
+(show_seat_id, price, booking_Id, ticket_type)
+SELECT ss.show_seat_id, 12.50, 1, 'Adult'
+FROM ShowSeat ss
+JOIN Seat s ON ss.seat_id = s.seat_id
+WHERE ss.showtime_id = 1 AND s.seat_number = 2;
+
+INSERT INTO Ticket
+(show_seat_id, price, booking_Id, ticket_type)
+SELECT ss.show_seat_id, 12.50, 2, 'Adult'
+FROM ShowSeat ss
+JOIN Seat s ON ss.seat_id = s.seat_id
+WHERE ss.showtime_id = 2 AND s.seat_number = 3;
+
+INSERT INTO Ticket
+(show_seat_id, price, booking_Id, ticket_type)
+SELECT ss.show_seat_id, 12.50, 2, 'Adult'
+FROM ShowSeat ss
+JOIN Seat s ON ss.seat_id = s.seat_id
+WHERE ss.showtime_id = 2 AND s.seat_number = 4;
+
+INSERT INTO Ticket
+(show_seat_id, price, booking_Id, ticket_type)
+SELECT ss.show_seat_id, 15.00, 3, 'Adult'
+FROM ShowSeat ss
+JOIN Seat s ON ss.seat_id = s.seat_id
+WHERE ss.showtime_id = 3 AND s.seat_number = 5;
+
+INSERT INTO Ticket
+(show_seat_id, price, booking_Id, ticket_type)
+SELECT ss.show_seat_id, 15.00, 4, 'Adult'
+FROM ShowSeat ss
+JOIN Seat s ON ss.seat_id = s.seat_id
+WHERE ss.showtime_id = 4 AND s.seat_number = 6;
+
+INSERT INTO Ticket
+(show_seat_id, price, booking_Id, ticket_type)
+SELECT ss.show_seat_id, 15.00, 4, 'Adult'
+FROM ShowSeat ss
+JOIN Seat s ON ss.seat_id = s.seat_id
+WHERE ss.showtime_id = 4 AND s.seat_number = 7;
+
+INSERT INTO Ticket
+(show_seat_id, price, booking_Id, ticket_type)
+SELECT ss.show_seat_id, 12.50, 5, 'Adult'
+FROM ShowSeat ss
+JOIN Seat s ON ss.seat_id = s.seat_id
+WHERE ss.showtime_id = 5 AND s.seat_number = 8;
+
+-- Mark purchased seats as booked
+UPDATE ShowSeat ss
+JOIN Ticket t ON ss.show_seat_id = t.show_seat_id
+SET ss.status = 'Booked';
+
+-- =============================================
+-- 9. FAVORITE MOVIES
+-- =============================================
+
+INSERT INTO FavoriteMovie
+(movie_rank, customer_id, movie_id)
+VALUES
+(1, 1, 1),
+(2, 1, 2),
+(3, 1, 5),
+(1, 2, 3),
+(2, 2, 1),
+(1, 3, 4),
+(2, 3, 6),
+(1, 5, 5),
+(2, 5, 2),
+(1, 7, 1);
+
+-- =============================================
+-- 10. RECOMMENDATIONS
+-- =============================================
+
+INSERT INTO Recommendation
+(preferences, customer_id, movie_id)
+VALUES
+('{"genre":"Sci-Fi","reason":"Favorite genre"}', 1, 5),
+('{"genre":"Action","reason":"Liked The Dark Knight"}', 1, 6),
+('{"genre":"Drama","reason":"Similar viewing history"}', 2, 4),
+('{"genre":"Sci-Fi","reason":"Interest in space movies"}', 3, 1),
+('{"genre":"Action","reason":"Popular recommendation"}', 5, 2),
+('{"genre":"Adventure","reason":"Previous favorites"}', 7, 5);
+
+-- =============================================
+-- 11. CREDIT CARDS
+-- Fictional non-payment test values
+-- =============================================
+
+INSERT INTO CreditCard
+(customer_id, card_number, billing_address, expiration_date)
+VALUES
+(1, 'TEST-CARD-0001', '100 Main St, Athens, GA', '2028-12-31'),
+(2, 'TEST-CARD-0002', '200 Broad St, Athens, GA', '2029-06-30'),
+(3, 'TEST-CARD-0003', '300 College Ave, Athens, GA', '2028-09-30'),
+(5, 'TEST-CARD-0004', '500 Milledge Ave, Athens, GA', '2029-03-31'),
+(7, 'TEST-CARD-0005', '700 Prince Ave, Athens, GA', '2028-11-30');
