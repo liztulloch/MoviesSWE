@@ -15,6 +15,7 @@ class RegistrationRequest(BaseModel):
         pattern=r"\S",
     )
     email: EmailStr
+    mailing_address: str = Field(min_length=8, max_length=200)
     phone: str = Field(
         min_length=1,
         max_length=30,

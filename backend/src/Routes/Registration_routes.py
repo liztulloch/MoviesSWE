@@ -16,7 +16,7 @@ from ..Services.registration_service import (
 
 
 router = APIRouter(
-    prefix="/auth",
+    prefix="/reg",
     tags=["Registration"],
 )
 

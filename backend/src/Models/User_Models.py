@@ -30,7 +30,7 @@ class User(Base):
         unique=True,
     )
 
-    phone = Column(String(30), nullable=False)
+    phone = Column("phone_number", String(30), nullable=False)
 
     # Python attribute: password_hash
     # Actual SQL column: password

@@ -30,7 +30,7 @@ def get_customer_profile(
 
     if customer.status != "Active":
         raise ProfileError(
-            "This account cannot access its profile.",
+            "This account cannot access its profile. It needs to be verified.",
             403,
         )
 
@@ -69,7 +69,7 @@ def update_customer_profile(
 
         if customer.status != "Active":
             raise ProfileError(
-                "This account cannot edit its profile.",
+                "This account cannot edit its profile. It's needs to be verified.",
                 403,
             )
 
@@ -95,7 +95,7 @@ def update_customer_profile(
         user.first_name = data.first_name
         user.last_name = data.last_name
         user.phone = data.phone
-        email = user.email
+       
         
         # Update fields belonging to Customer.
         customer.mailing_address = data.mailing_address
@@ -120,6 +120,5 @@ def update_customer_profile(
 
     return {
         "message": "Your profile was updated successfully.",
-        "profile": profile,
-        "notification_sent": True,
+        "profile": profile
     }

@@ -28,9 +28,7 @@ def register_user(
 ) -> dict:
     email = str(data.email).strip().lower()
 
-    password_hash = hash_password(
-        data.password.get_secret_value()
-    )
+    password_hash = hash_password(data.password.get_secret_value())
 
     code = create_verification_code()
     code_hash = hash_password(code)
@@ -38,9 +36,7 @@ def register_user(
     try:
         # Save User and Customer together.
         with db.begin():
-            existing_user = db.scalar(
-                select(User).where(User.email == email)
-            )
+            existing_user = db.scalar(select(User).where(User.email == email))
 
             if existing_user is not None:
                 raise RegistrationError(
@@ -64,7 +60,7 @@ def register_user(
 
             customer = Customer(
                 customer_id=user.user_id,
-                mailing_address=None,
+                mailing_address=data.mailing_address,
                 status="Inactive",
                 verification_code_hash=code_hash,
                 password_reset_code_hash=None,
@@ -100,11 +96,11 @@ def register_user(
 
     return {
         "message": (
-            "Your account was created. "
-            "Check your email for the verification code."
+            "Your account was created. " "Check your email for the verification code."
         )
     }
-    
+
+
 def verify_email(
     db: Session,
     email: str,
@@ -114,15 +110,11 @@ def verify_email(
 
     with db.begin():
         # Lock this account while checking and consuming its code.
-        user = db.scalar(
-            select(User)
-            .where(User.email == email)
-            .with_for_update()
-        )
+        user = db.scalar(select(User).where(User.email == email).with_for_update())
 
         if user is None:
             raise RegistrationError(
-                "Invalid verification request.",
+                "Invalid verification request. User does not exist for this email",
                 400,
             )
 
@@ -132,17 +124,22 @@ def verify_email(
             with_for_update=True,
         )
 
-        if customer is None or customer.status != "Inactive":
+        if customer is None:
             raise RegistrationError(
-                "Invalid verification request.",
+                "Invalid verification request. User is not a customer.",
                 400,
+            )
+
+        if customer.status != "Inactive":
+            raise RegistrationError(
+                "Invalid verification request. Customer is already verified.",
+                403,
             )
 
         if customer.verification_code_hash is None:
             raise RegistrationError(
-                "No verification code is available. "
-                "Please request another code.",
-                400,
+                "No verification code is available. " "Please request another code.",
+                404,
             )
 
         is_correct = verify_verification_code(
@@ -160,35 +157,45 @@ def verify_email(
         customer.status = "Active"
         customer.verification_code_hash = None
 
-    return {
-        "message": "Email verified successfully. You can now log in."
-    }
-    
-def resend_verification(
-    db: Session,
-    email: str,
-) -> dict:
+    return {"message": "Email verified successfully."}
+
+
+def resend_verification(db: Session, email: str) -> dict:
     email = email.strip().lower()
     code = None
 
-    with db.begin():
-        user = db.scalar(
-            select(User)
-            .where(User.email == email)
-            .with_for_update()
-        )
 
-        if user is not None:
-            customer = db.get(
-                Customer,
-                user.user_id,
-                with_for_update=True,
+    with db.begin():
+        user = db.scalar(select(User).where(User.email == email).with_for_update())
+
+        if user is None:
+            raise RegistrationError(
+                "Invalid verification request. User does not exist for this email",
+                404,
             )
 
-            if customer is not None and customer.status == "Inactive":
-                code = create_verification_code()
+        customer = db.get(
+            Customer,
+            user.user_id,
+            with_for_update=True,
+        )
 
-                customer.verification_code_hash = hash_password(code)
+        if customer is None:
+            raise RegistrationError(
+                "Invalid verification request. User is not a customer.",
+                404,
+            )
+
+        
+        if customer.status == "Active":
+            raise RegistrationError(
+                "Invalid verification request. Customer is already verified.",
+                403,
+            )
+
+        code = create_verification_code()
+        customer.verification_code_hash = hash_password(code)
+
 
     # The replacement hash has committed before sending.
     if code is not None:
@@ -202,8 +209,4 @@ def resend_verification(
                 503,
             ) from error
 
-    return {
-        "message": (
-            "Check your email for the verification code."
-        )
-    }
+    return {"message": "Check your email for the verification code."}
