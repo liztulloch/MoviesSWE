@@ -1,5 +1,10 @@
-CREATE DATABASE cinema_booking;
 USE cinema_booking;
+
+DROP TABLE IF EXISTS Showtime;
+DROP TABLE IF EXISTS MovieRole;
+DROP TABLE IF EXISTS TheaterHall;
+DROP TABLE IF EXISTS Person;
+DROP TABLE IF EXISTS Movie;
 
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`Movie` (
   `movie_id` INT NOT NULL AUTO_INCREMENT,
@@ -52,15 +57,12 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`Showtime`(
     `show_time` VARCHAR(10) NOT NULL,
 
     PRIMARY KEY (`showtime_id`),
-    UNIQUE (`movie_id`, `hall_id`, `show_date`, `show_time`),
+    UNIQUE (`hall_id`, `show_date`, `show_time`),
 
     FOREIGN KEY (`movie_id`) REFERENCES Movie(`movie_id`),
     FOREIGN KEY (`hall_id`) REFERENCES TheaterHall(`hall_id`)
 )
 ENGINE = InnoDB;
-
-
-
 INSERT INTO Movie
     (poster, title, mpaa_rating, synopsis, genre, status,
      trailer_image, trailer, reviews)
@@ -121,7 +123,7 @@ VALUES
         'https://www.rottentomatoes.com/m/dune_part_two#critics-reviews'
     ),
     (
-        'https://image.tmdb.org/t/p/w500/kMDUS7VmFhb2coRfVBoGLR8ADBt.jpg',
+        'https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p34442_p_v10_aq.jpg',
         'Spider-Man 2',
         'PG-13',
         'Peter Parker struggles to balance his personal life with his responsibilities as Spider-Man while facing Doctor Octopus.',
@@ -131,70 +133,73 @@ VALUES
         'https://www.youtube.com/watch?v=1s9Yln0YwCw',
         'https://www.rottentomatoes.com/m/spiderman_2#critics-reviews'
     ),
+
+    -- Coming Soon
+
     (
+        'https://resizing.flixster.com/L4FFhrg4cS3UwcUFr9sHyEE_nlY=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2EzMDNkYmUyLTk4NzMtNDRkMS04Mjc4LWQ3NGU1MjNjMGQzMi5qcGc=',
+        'Clayface',
+        'R',
+        'Matt Hagen''s rise from Gotham street kid to Hollywood leading man is cut short when he is horribly disfigured. A cutting-edge treatment restores his appearance but unexpectedly affects his grip on reality.',
+        'Horror, Thriller',
+        'Coming Soon',
+        'https://img.youtube.com/vi/OGO4Mqvo3jI/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=OGO4Mqvo3jI',
+        NULL
+    ),
+    (
+        'https://resizing.flixster.com/HI64aC1g5q3IEbUvYxwC7aD2k8E=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzBmZTYzOGEwLTRjMTQtNDcxYS1hMzY3LTUwOTI5OGQ1OTI0Ny5qcGc=',
+        'Street Fighter',
         NULL,
-        'Avengers: Secret Wars',
+        'Estranged fighters Ryu and Ken Masters are thrown back into combat when Chun-Li recruits them for the World Warrior Tournament, where a deadly conspiracy awaits.',
+        'Action, Adventure',
+        'Coming Soon',
+		'https://img.youtube.com/vi/Xt4X4FvXk2A/maxresdefault.jpg',
+	    'https://www.youtube.com/watch?v=Xt4X4FvXk2A',
+        NULL
+    ),
+    (
+        'https://resizing.flixster.com/dKU6Pe1P3KPx74Z_y3aX98rn4T4=/fit-in/352x330/v2/https://resizing.flixster.com/1t7u88QXOet-KAWbng7yel34DjY=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzZlODBlNGU2LWIxN2YtNGNiMC04ZGE0LWFjZDFmNTI5YTVmNC5qcGc=',
+        'The Hunger Games: Sunrise on the Reaping',
         NULL,
-        'The Avengers return for a new chapter in the Marvel Cinematic Universe.',
+        'Twenty-four years before the events of The Hunger Games, a young Haymitch Abernathy is selected to compete in the 50th Hunger Games, also known as the Second Quarter Quell.',
+        'Action, Adventure, Drama',
+        'Coming Soon',
+        'https://img.youtube.com/vi/fS35YSjopjE/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=fS35YSjopjE',
+        NULL
+    ),
+    (
+        'https://m.media-amazon.com/images/M/MV5BNGEwYWZkN2UtOTQ5Mi00MGQzLWEzNjYtMWMyNDBkMTkzMWNkXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg',
+        'Avengers: Doomsday',
+        NULL,
+        'Heroes from three distinct universes are set on a deadly collision course as they face an existential threat unlike anything they have encountered before.',
         'Action, Adventure, Sci-Fi',
         'Coming Soon',
-        NULL,
-        NULL,
+        'https://img.youtube.com/vi/fxNh27fRdYA/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=fxNh27fRdYA',
         NULL
     ),
     (
+        'https://resizing.flixster.com/_iIt4XxdnDsIgXQ3I2U-x0Xj_70=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2VkN2QzNWJhLTcyMzgtNDlkMS05NDZkLWJiZjE4ZGViZjNhNC5qcGc=',
+        'Dune: Part Three',
         NULL,
-        'The Batman Part II',
-        NULL,
-        'The next chapter in the story of Batman in Gotham City.',
-        'Action, Crime, Drama',
+        'Nearly two decades after Paul Atreides seized control of the Imperium, he must face the consequences of his reign as old allies return, new threats emerge, and betrayal lurks in every shadow.',
+        'Sci-Fi, Adventure, Drama',
         'Coming Soon',
-        NULL,
-        NULL,
+        'https://img.youtube.com/vi/iEpdGDM6x48/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=iEpdGDM6x48',
         NULL
     ),
     (
+        'https://resizing.flixster.com/bI1UsSOuibnXKuyDqGX6-eOpxps=/fit-in/352x330/v2/https://resizing.flixster.com/2uORLUCFbTg2oV26tr-C4oevoC0=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzFmYWEyMGNmLWJkMGUtNGNjNC1hNzIzLTc5ODc4M2JlMDEzYS5qcGc=',
+        'The Angry Birds Movie 3',
         NULL,
-        'Spider-Man: Beyond the Spider-Verse',
-        NULL,
-        'Miles Morales continues his journey across the Spider-Verse.',
-        'Animation, Action, Adventure',
-        'Coming Soon',
-        NULL,
-        NULL,
-        NULL
-    ),
-    (
-        NULL,
-        'Frozen III',
-        NULL,
-        'The next animated adventure in the Frozen film series.',
-        'Animation, Adventure, Family',
-        'Coming Soon',
-        NULL,
-        NULL,
-        NULL
-    ),
-    (
-        NULL,
-        'The Super Mario Galaxy Movie',
-        NULL,
-        'Mario and his friends return for a new animated adventure.',
+        'Red faces his greatest challenge yet as he attempts to survive fatherhood while once again saving the world.',
         'Animation, Adventure, Comedy',
         'Coming Soon',
-        NULL,
-        NULL,
-        NULL
-    ),
-    (
-        NULL,
-        'Star Wars: Starfighter',
-        NULL,
-        'A new standalone adventure set in the Star Wars galaxy.',
-        'Sci-Fi, Adventure, Action',
-        'Coming Soon',
-        NULL,
-        NULL,
+        'https://img.youtube.com/vi/n1DBDfavlQo/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=n1DBDfavlQo',
         NULL
     );
 
@@ -204,50 +209,57 @@ VALUES
 INSERT INTO Person
     (first_name, last_name)
 VALUES
-    ('Christopher', 'Nolan'),
-    ('Emma', 'Thomas'),
-    ('Frank', 'Darabont'),
-    ('Niki', 'Marvin'),
-    ('Denis', 'Villeneuve'),
-    ('Mary', 'Parent'),
-    ('Sam', 'Raimi'),
-    ('Laura', 'Ziskin'),
-    ('Anthony', 'Russo'),
-    ('Joe', 'Russo'),
-    ('Kevin', 'Feige'),
-    ('Matt', 'Reeves'),
-    ('Shawn', 'Levy'),
-    ('Matthew', 'McConaughey'),
-    ('Anne', 'Hathaway'),
-    ('Jessica', 'Chastain'),
-    ('Michael', 'Caine'),
-    ('Christian', 'Bale'),
-    ('Heath', 'Ledger'),
-    ('Aaron', 'Eckhart'),
-    ('Gary', 'Oldman'),
-    ('Cillian', 'Murphy'),
-    ('Emily', 'Blunt'),
-    ('Robert', 'Downey Jr.'),
-    ('Matt', 'Damon'),
-    ('Tim', 'Robbins'),
-    ('Morgan', 'Freeman'),
-    ('Bob', 'Gunton'),
-    ('William', 'Sadler'),
-    ('Timothee', 'Chalamet'),
-    ('Zendaya', 'Coleman'),
-    ('Rebecca', 'Ferguson'),
-    ('Javier', 'Bardem'),
-    ('Tobey', 'Maguire'),
-    ('Kirsten', 'Dunst'),
-    ('Alfred', 'Molina'),
-    ('James', 'Franco');
+    
+    ('Christopher', 'Nolan'),       
+    ('Emma', 'Thomas'),             
+    ('Frank', 'Darabont'),          
+    ('Niki', 'Marvin'),             
+    ('Denis', 'Villeneuve'),        
+    ('Mary', 'Parent'),             
+    ('Sam', 'Raimi'),               
+    ('Laura', 'Ziskin'),            
+    ('Anthony', 'Russo'),           
+    ('Joe', 'Russo'),               
+    ('Kevin', 'Feige'),             
+    ('Matt', 'Reeves'),             
+    ('Shawn', 'Levy'),              
 
+    ('Matthew', 'McConaughey'),     
+    ('Anne', 'Hathaway'),           
+    ('Jessica', 'Chastain'),        
+    ('Michael', 'Caine'),           
+    ('Christian', 'Bale'),          
+    ('Heath', 'Ledger'),            
+    ('Aaron', 'Eckhart'),           
+    ('Gary', 'Oldman'),             
+    ('Cillian', 'Murphy'),          
+    ('Emily', 'Blunt'),             
+    ('Robert', 'Downey Jr.'),       
+    ('Matt', 'Damon'),              
+    ('Tim', 'Robbins'),             
+    ('Morgan', 'Freeman'),          
+    ('Bob', 'Gunton'),              
+    ('William', 'Sadler'),          
+    ('Timothee', 'Chalamet'),       
+    ('Zendaya', 'Coleman'),         
+    ('Rebecca', 'Ferguson'),        
+    ('Javier', 'Bardem'),           
+    ('Tobey', 'Maguire'),           
+    ('Kirsten', 'Dunst'),           
+    ('Alfred', 'Molina'),           
+    ('James', 'Franco'),            
+
+    ('James', 'Watkins'),            
+    ('Kitao', 'Sakurai'),            
+    ('Francis', 'Lawrence'),         
+    ('John', 'Rice');                
 
 
 
 INSERT INTO MovieRole
     (movie_id, person_id, role, character_name)
 VALUES
+    
     (1, 1, 'Director', NULL),
     (1, 2, 'Producer', NULL),
     (1, 14, 'Actor', 'Cooper'),
@@ -255,6 +267,7 @@ VALUES
     (1, 16, 'Actor', 'Murph'),
     (1, 17, 'Actor', 'Professor Brand'),
 
+    
     (2, 1, 'Director', NULL),
     (2, 2, 'Producer', NULL),
     (2, 18, 'Actor', 'Bruce Wayne / Batman'),
@@ -262,7 +275,7 @@ VALUES
     (2, 20, 'Actor', 'Harvey Dent'),
     (2, 21, 'Actor', 'James Gordon'),
 
-
+    
     (3, 1, 'Director', NULL),
     (3, 2, 'Producer', NULL),
     (3, 22, 'Actor', 'J. Robert Oppenheimer'),
@@ -270,6 +283,7 @@ VALUES
     (3, 24, 'Actor', 'Lewis Strauss'),
     (3, 25, 'Actor', 'Leslie Groves'),
 
+    
     (4, 3, 'Director', NULL),
     (4, 4, 'Producer', NULL),
     (4, 26, 'Actor', 'Andy Dufresne'),
@@ -277,7 +291,7 @@ VALUES
     (4, 28, 'Actor', 'Warden Norton'),
     (4, 29, 'Actor', 'Heywood'),
 
-
+    
     (5, 5, 'Director', NULL),
     (5, 6, 'Producer', NULL),
     (5, 30, 'Actor', 'Paul Atreides'),
@@ -285,6 +299,7 @@ VALUES
     (5, 32, 'Actor', 'Lady Jessica'),
     (5, 33, 'Actor', 'Stilgar'),
 
+    
     (6, 7, 'Director', NULL),
     (6, 8, 'Producer', NULL),
     (6, 34, 'Actor', 'Peter Parker / Spider-Man'),
@@ -292,17 +307,21 @@ VALUES
     (6, 36, 'Actor', 'Otto Octavius / Doctor Octopus'),
     (6, 37, 'Actor', 'Harry Osborn'),
 
+    
+    (7, 38, 'Director', NULL),
 
-    (7, 9, 'Director', NULL),
-    (7, 10, 'Director', NULL),
-    (7, 11, 'Producer', NULL),
+    (8, 39, 'Director', NULL),
 
+    (9, 40, 'Director', NULL),
 
-    (8, 12, 'Director', NULL),
+    (10, 9, 'Director', NULL),
+    (10, 10, 'Director', NULL),
+    (10, 11, 'Producer', NULL),
 
+    (11, 5, 'Director', NULL),
 
-    (12, 13, 'Director', NULL);
-
+    
+    (12, 41, 'Director', NULL);
 
 
 
@@ -319,6 +338,8 @@ VALUES
 INSERT INTO Showtime
     (movie_id, hall_id, show_date, show_time)
 VALUES
+
+ 
     (1, 1, '2026-09-26', '1:00 PM'),
     (1, 1, '2026-09-26', '5:00 PM'),
     (1, 1, '2026-09-26', '9:00 PM'),
@@ -326,6 +347,7 @@ VALUES
     (1, 2, '2026-09-26', '7:00 PM'),
     (1, 3, '2026-09-26', '6:00 PM'),
 
+  
     (2, 1, '2026-09-26', '2:00 PM'),
     (2, 1, '2026-09-26', '6:00 PM'),
     (2, 1, '2026-09-26', '9:30 PM'),
@@ -333,6 +355,7 @@ VALUES
     (2, 2, '2026-09-26', '8:00 PM'),
     (2, 3, '2026-09-26', '7:30 PM'),
 
+    
     (3, 1, '2026-09-26', '12:30 PM'),
     (3, 1, '2026-09-26', '4:30 PM'),
     (3, 1, '2026-09-26', '8:30 PM'),
@@ -340,11 +363,13 @@ VALUES
     (3, 2, '2026-09-26', '7:30 PM'),
     (3, 3, '2026-09-26', '5:30 PM'),
 
+    
     (4, 1, '2026-09-26', '1:30 PM'),
     (4, 1, '2026-09-26', '6:30 PM'),
     (4, 2, '2026-09-26', '2:00 PM'),
-    (4, 2, '2026-09-26', '7:00 PM'),
+    (4, 2, '2026-09-26', '6:00 PM'),
     (4, 3, '2026-09-26', '8:00 PM'),
+
     
     (5, 1, '2026-09-26', '12:00 PM'),
     (5, 1, '2026-09-26', '4:00 PM'),
@@ -354,19 +379,21 @@ VALUES
     (5, 2, '2026-09-26', '9:30 PM'),
     (5, 3, '2026-09-26', '6:30 PM'),
 
-
-    (6, 1, '2026-09-26', '1:00 PM'),
-    (6, 1, '2026-09-26', '4:00 PM'),
+    
+    (6, 1, '2026-09-26', '3:00 PM'),
     (6, 1, '2026-09-26', '7:00 PM'),
-    (6, 2, '2026-09-26', '2:30 PM'),
+    (6, 1, '2026-09-26', '10:00 PM'),
+    (6, 2, '2026-09-26', '3:00 PM'),
     (6, 2, '2026-09-26', '6:30 PM'),
     (6, 3, '2026-09-26', '8:30 PM'),
 
-  
+    
+
+    
     (1, 1, '2026-09-27', '2:00 PM'),
     (1, 2, '2026-09-27', '7:00 PM'),
 
-  
+    
     (2, 1, '2026-09-27', '3:00 PM'),
     (2, 3, '2026-09-27', '8:00 PM'),
 
@@ -374,12 +401,13 @@ VALUES
     (3, 1, '2026-09-27', '4:00 PM'),
     (3, 2, '2026-09-27', '8:30 PM'),
 
+    
     (4, 1, '2026-09-27', '5:00 PM'),
 
-
+    
     (5, 2, '2026-09-27', '2:30 PM'),
     (5, 3, '2026-09-27', '7:30 PM'),
 
-
+    
     (6, 1, '2026-09-27', '1:30 PM'),
     (6, 2, '2026-09-27', '6:00 PM');
