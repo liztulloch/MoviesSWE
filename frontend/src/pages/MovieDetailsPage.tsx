@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { getMovie } from "../api/movies";
 import { showDatesFor, formatShowDate } from "../showtimes";
 import type { Movie } from "../types";
+import FavoriteButton from "../components/FavoriteButton";
 import ShowtimeList from "../components/ShowtimeList";
 import TrailerPlayer from "../components/TrailerPlayer";
 
@@ -55,7 +56,10 @@ export default function MovieDetailsPage() {
         </div>
 
         <div className="details-info">
-          <h1>{movie.title}</h1>
+          <div className="title-row">
+            <h1>{movie.title}</h1>
+            <FavoriteButton movie={movie} />
+          </div>
           <div className="detail-meta">
             <span className="rating-badge" title="Rating">
               {movie.rating ? `Rated ${movie.rating}` : "Not rated"}
