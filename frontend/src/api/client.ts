@@ -36,17 +36,26 @@ export const setUnauthorizedHandler = (fn: () => void) => { onUnauthorized = fn;
 // "first_name" -> "firstName", so backend field errors line up with the form's field names.
 const toCamel = (s: string) => s.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
 
+// "mailing_address" -> "Mailing address"
+const toLabel = (s: string) => (s.charAt(0).toUpperCase() + s.slice(1)).replace(/_/g, " ");
+
 // FastAPI sends { detail: "message" }, or for failed field checks (422) { detail: [{ loc, msg }, ...] }.
 function toApiError(status: number, data: any): ApiError {
   const detail = data?.detail;
   if (typeof detail === "string") return new ApiError(status, detail);
   if (Array.isArray(detail)) {
     const fieldErrors: Record<string, string> = {};
+    const lines: string[] = [];
     for (const d of detail) {
       const field = d?.loc?.[d.loc.length - 1];
-      if (typeof field === "string") fieldErrors[toCamel(field)] = String(d.msg ?? "This value isn't valid.");
+      const msg = String(d?.msg ?? "This value isn't valid.");
+      if (typeof field === "string") {
+        fieldErrors[toCamel(field)] = msg;
+        lines.push(`${toLabel(field)}: ${msg}`);
+      } else lines.push(msg);
     }
-    return new ApiError(status, "Please fix the highlighted fields.", fieldErrors);
+    // The fields are also listed in the message, because the form may not have an input with the backend's name.
+    return new ApiError(status, `Some details weren't accepted. ${lines.join(". ")}.`, fieldErrors);
   }
   return new ApiError(status, `Something went wrong (error ${status}). Please try again.`);
 }
@@ -64,7 +73,8 @@ export async function request<T>(path: string, options: { method?: string; body?
       body: options.body === undefined ? undefined : JSON.stringify(options.body),
     });
   } catch {
-    throw new ApiError(0, "Can't reach the server. Check that the backend is running and try again.");
+    // Also what a backend crash looks like: FastAPI's 500 page has no CORS headers, so the browser hides it.
+    throw new ApiError(0, "We couldn't complete that request. The server may be down or ran into a problem. Please try again in a moment.");
   }
 
   const data = res.status === 204 ? null : await res.json().catch(() => null);

@@ -11,11 +11,13 @@ import { codeError, emailError, hasErrors } from "../validation";
 export default function VerifyEmailPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const state = (useLocation().state ?? {}) as { message?: string; devCode?: string };
+  const state = (useLocation().state ?? {}) as { message?: string; isError?: boolean; devCode?: string };
   const [email, setEmail] = useState(params.get("email") ?? "");
   const [code, setCode] = useState("");
   const [errors, setErrors] = useState<{ email?: string; code?: string }>({});
-  const [notice, setNotice] = useState<Notice | null>(state.message ? { kind: "success", text: state.message } : null);
+  const [notice, setNotice] = useState<Notice | null>(
+    state.message ? { kind: state.isError ? "error" : "success", text: state.message } : null
+  );
   const [devCode, setDevCode] = useState(state.devCode);
   const [busy, setBusy] = useState<"verify" | "resend" | null>(null);
 

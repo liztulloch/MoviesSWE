@@ -82,6 +82,11 @@ export default function RegisterPage() {
         state: { message: res.message, devCode: res.devCode },
       });
     } catch (err) {
+      // 503: the account was saved but the email didn't send, so go verify and use "Send a new code".
+      if (err instanceof ApiError && err.status === 503) {
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`, { state: { message: err.message, isError: true } });
+        return;
+      }
       if (err instanceof ApiError) setErrors((prev) => ({ ...prev, ...err.fieldErrors }));
       setFormError(messageOf(err));
       setSubmitting(false);
@@ -101,21 +106,21 @@ export default function RegisterPage() {
         <fieldset className="form-section">
           <legend>Account details</legend>
           <div className="form-grid">
-            <FormField label="First name" required autoComplete="given-name"
+            <FormField label="First name" required autoComplete="given-name" maxLength={100}
               value={form.firstName} onChange={set("firstName")} error={errors.firstName} />
-            <FormField label="Last name" required autoComplete="family-name"
+            <FormField label="Last name" required autoComplete="family-name" maxLength={100}
               value={form.lastName} onChange={set("lastName")} error={errors.lastName} />
             <FormField label="Email" type="email" required autoComplete="email"
               value={form.email} onChange={set("email")} error={errors.email}
               hint="We'll send a code here to confirm it's you." />
-            <FormField label="Phone number" type="tel" required autoComplete="tel" placeholder="706-555-0123"
+            <FormField label="Phone number" type="tel" required autoComplete="tel" maxLength={30} placeholder="706-555-0123"
               value={form.phone} onChange={set("phone")} error={errors.phone} />
             <div className="span-2">
-              <FormField label="Password" type="password" required autoComplete="new-password"
+              <FormField label="Password" type="password" required autoComplete="new-password" maxLength={128}
                 value={form.password} onChange={set("password")} error={errors.password} />
               <PasswordRules password={form.password} />
             </div>
-            <FormField className="span-2" label="Confirm password" type="password" required autoComplete="new-password"
+            <FormField className="span-2" label="Confirm password" type="password" required autoComplete="new-password" maxLength={128}
               value={form.confirm} onChange={set("confirm")} error={errors.confirm} />
           </div>
           <label className="check">

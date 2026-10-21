@@ -71,13 +71,13 @@ export default function PersonalInfoForm({ profile, onSaved }: { profile: Profil
     <form className="form" noValidate onSubmit={submit}>
       <RequiredNote />
       <div className="form-grid">
-        <FormField label="First name" required autoComplete="given-name"
+        <FormField label="First name" required autoComplete="given-name" maxLength={100}
           value={form.firstName} onChange={set("firstName")} error={errors.firstName} />
-        <FormField label="Last name" required autoComplete="family-name"
+        <FormField label="Last name" required autoComplete="family-name" maxLength={100}
           value={form.lastName} onChange={set("lastName")} error={errors.lastName} />
         <FormField label="Email" type="email" value={profile.email} disabled readOnly
           hint="Your email can't be changed because it's your login." />
-        <FormField label="Phone number" type="tel" required autoComplete="tel"
+        <FormField label="Phone number" type="tel" required autoComplete="tel" maxLength={30}
           value={form.phone} onChange={set("phone")} error={errors.phone} />
       </div>
       <label className="check">

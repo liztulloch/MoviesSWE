@@ -28,6 +28,7 @@ export interface LoginResult {
   user: SessionUser;
 }
 
+// Field names match RegistrationRequest in backend/src/schemas/Registration_schema.py.
 export async function register(input: RegisterInput): Promise<CodeResponse> {
   if (USE_MOCK_AUTH) return mock.register(input);
   const body: Record<string, unknown> = {
@@ -38,21 +39,24 @@ export async function register(input: RegisterInput): Promise<CodeResponse> {
     password: input.password,
     promotion_opt_in: input.receivePromotions,
   };
-  // BACKEND-TODO: RegistrationRequest doesn't accept an address or cards yet, so they're only sent when filled in.
+  // BACKEND-TODO: the backend requires mailing_address, but the spec (requirement 8) says it's optional,
+  // so it's only sent when filled in. It also doesn't accept cards yet.
   if (input.address) body.mailing_address = formatAddress(input.address);
   if (input.cards.length) body.cards = input.cards.map(toCardBody);
-  const res = await request<{ message?: string } | null>("/auth/register", { method: "POST", body });
+  const res = await request<{ message?: string } | null>("/reg/register", { method: "POST", body });
   return { message: res?.message ?? `We sent a 4-digit code to ${input.email}.` };
 }
 
+// Matches VerificationRequest in Registration_schema.py.
 export async function verifyEmail(email: string, code: string): Promise<void> {
   if (USE_MOCK_AUTH) return mock.verifyEmail(email, code);
-  await request("/auth/verify-email", { method: "POST", body: { email, code } });
+  await request("/reg/verify-email", { method: "POST", body: { email, code } });
 }
 
+// Matches ResendVerificationRequest in Registration_schema.py.
 export async function resendVerification(email: string): Promise<CodeResponse> {
   if (USE_MOCK_AUTH) return mock.resendVerification(email);
-  const res = await request<{ message?: string } | null>("/auth/resend-verification", { method: "POST", body: { email } });
+  const res = await request<{ message?: string } | null>("/reg/resend-verification", { method: "POST", body: { email } });
   return { message: res?.message ?? `We sent a new code to ${email}.` };
 }
 
