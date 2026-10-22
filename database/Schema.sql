@@ -113,14 +113,15 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`User` (
     `user_id` INT NOT NULL AUTO_INCREMENT,
     `first_name` VARCHAR(500) NOT NULL,
     `last_name` VARCHAR(500) NOT NULL,
-    `email` VARCHAR(500) NULL,
+    `email` VARCHAR(500) NOT NULL,
     `phone_number` VARCHAR(20) NULL,
     `password` VARCHAR(300) NOT NULL,
+    UNIQUE(`email`),
     PRIMARY KEY (`user_id`)
 ) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`Customer` (
-    `mailing_address` VARCHAR(200) NOT NULL,
+    `mailing_address` VARCHAR(200) NULL,
     `customer_id` INT NOT NULL,
     `status` ENUM(
         'Active',
