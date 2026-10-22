@@ -95,7 +95,7 @@ class CreditCard(Base):
      )
      
      cardholder_name = Column(
-         String(200),
+         String(100),
          nullable=False
      )
      

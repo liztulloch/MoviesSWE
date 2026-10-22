@@ -6,7 +6,7 @@ class RegistrationCardRequest(BaseModel):
 
     cardholder_name: str = Field(
         min_length=1,
-        max_length=200,
+        max_length=100,
         pattern=r"\S"
     )
 
@@ -38,22 +38,22 @@ class RegistrationRequest(BaseModel):
 
     first_name: str = Field(
         min_length=1,
-        max_length=100,
+        max_length=500,
         pattern=r"\S",
     )
     last_name: str = Field(
         min_length=1,
-        max_length=100,
+        max_length=500,
         pattern=r"\S",
     )
-    email: EmailStr
+    email: EmailStr = Field(min_length=1, max_length=500)
     mailing_address: str | None = Field(min_length=0, max_length=200, default=None)
     phone: str = Field(
         min_length=1,
-        max_length=30,
-        pattern=r"\S",
+        max_length=20,
+        pattern=r"\S"
     )
-    password: SecretStr = Field(min_length=8, max_length=128)
+    password: SecretStr = Field(min_length=8, max_length=300)
     promotion_opt_in: bool = False
     
     cards: list[RegistrationCardRequest] = Field(

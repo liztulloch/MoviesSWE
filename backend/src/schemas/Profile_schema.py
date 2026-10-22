@@ -48,9 +48,9 @@ class ProfileSchema(BaseModel):
 class ProfileUpdateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    first_name: str = Field(min_length=1, max_length=100)
-    last_name: str = Field(min_length=1, max_length=100)
-    phone: str = Field(min_length=1, max_length=30)
+    first_name: str = Field(min_length=1, max_length=500)
+    last_name: str = Field(min_length=1, max_length=500)
+    phone: str = Field(min_length=1, max_length=20)
 
     mailing_address: str | None = Field(
         max_length=200,
@@ -89,6 +89,6 @@ class ChangePasswordRequest(BaseModel):
 
     new_password: SecretStr = Field(
         min_length=8,
-        max_length=128,
+        max_length=300,
     )
     

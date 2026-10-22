@@ -26,7 +26,7 @@ from ..dependencies import get_current_user
 
 
 router = APIRouter(
-    prefix="/users",
+    prefix="/user",
     tags=["Profile"],
 )
 
@@ -69,7 +69,7 @@ def edit_profile(
         ) from error
 
 
-@router.put("/me/change-password")
+@router.put("/change-password")
 def change_my_password(
     data: ChangePasswordRequest,
     current_user: User = Depends(get_current_user),
@@ -88,7 +88,7 @@ def change_my_password(
             detail=error.message,
         ) from error
 
-@router.post("/me/favorite")
+@router.post("/favorite-movie")
 def add_fav(
     data: FavoriteMovieRequest,
     current_user: User = Depends(get_current_user),
@@ -107,7 +107,7 @@ def add_fav(
             detail=error.message,
         ) from error
 
-@router.delete("/me/favorite")
+@router.delete("/favorite-movie")
 def remove_fav(
     data: FavoriteMovieRequest,
     current_user: User = Depends(get_current_user),
