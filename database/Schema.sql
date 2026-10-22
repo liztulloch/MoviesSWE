@@ -201,7 +201,6 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`Ticket` (
 ) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`FavoriteMovie` (
-    `movie_rank` INT NOT NULL,
     `customer_id` INT NOT NULL,
     `movie_id` INT NOT NULL,
     PRIMARY KEY (`customer_id`, `movie_id`),
@@ -209,7 +208,7 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`FavoriteMovie` (
     CONSTRAINT `fk_favoritemovie_customer1`
         FOREIGN KEY (`customer_id`)
         REFERENCES `cinema_booking`.`Customer` (`customer_id`)
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         ON UPDATE NO ACTION,
     CONSTRAINT `fk_favoritemovie_movie1`
         FOREIGN KEY (`movie_id`)
@@ -238,7 +237,8 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`Recommendation` (
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`CreditCard` (
 	`card_id` INT NOT NULL auto_increment,
     `customer_id` INT NOT NULL,
-    `card_number` varchar(100) NOT NULL,
+    `cardholder_name` varchar(100) NOT NULL,
+    `card_number` varchar(512) NOT NULL,
     `billing_address` VARCHAR(200) NOT NULL,
     `expiration_date` DATE NOT NULL,
     PRIMARY KEY (`card_ID`),
@@ -770,18 +770,18 @@ SET ss.status = 'Booked';
 -- =============================================
 
 INSERT INTO FavoriteMovie
-(movie_rank, customer_id, movie_id)
+(customer_id, movie_id)
 VALUES
-(1, 1, 1),
-(2, 1, 2),
-(3, 1, 5),
-(1, 2, 3),
-(2, 2, 1),
-(1, 3, 4),
-(2, 3, 6),
-(1, 5, 5),
-(2, 5, 2),
-(1, 7, 1);
+(1, 1),
+(1, 2),
+(1, 5),
+(2, 3),
+(2, 1),
+(3, 4),
+(3, 6),
+(5, 5),
+(5, 2),
+(7, 1);
 
 -- =============================================
 -- 10. RECOMMENDATIONS
@@ -803,10 +803,10 @@ VALUES
 -- =============================================
 
 INSERT INTO CreditCard
-(customer_id, card_number, billing_address, expiration_date)
+(customer_id, cardholder_name, card_number, billing_address, expiration_date)
 VALUES
-(1, 'TEST-CARD-0001', '100 Main St, Athens, GA', '2028-12-31'),
-(2, 'TEST-CARD-0002', '200 Broad St, Athens, GA', '2029-06-30'),
-(3, 'TEST-CARD-0003', '300 College Ave, Athens, GA', '2028-09-30'),
-(5, 'TEST-CARD-0004', '500 Milledge Ave, Athens, GA', '2029-03-31'),
-(7, 'TEST-CARD-0005', '700 Prince Ave, Athens, GA', '2028-11-30');
+(1, 'John Smith', 'TEST-CARD-0001', '100 Main St, Athens, GA', '2028-12-31'),
+(2, 'Emily Johnson', 'TEST-CARD-0002', '200 Broad St, Athens, GA', '2029-06-30'),
+(3, 'Michael Brown', 'TEST-CARD-0003', '300 College Ave, Athens, GA', '2028-09-30'),
+(5, 'David Wilson', 'TEST-CARD-0004', '500 Milledge Ave, Athens, GA', '2029-03-31'),
+(7, 'Robert Taylor', 'TEST-CARD-0005', '700 Prince Ave, Athens, GA', '2028-11-30');
