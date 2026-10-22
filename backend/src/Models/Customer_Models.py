@@ -5,46 +5,10 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    Date
 )
 from sqlalchemy.orm import relationship
-
 from ..Database import Base
-
-
-class User(Base):
-    __tablename__ = "User"
-    __table_args__ = {"schema": "cinema_booking"}
-
-    user_id = Column(
-        Integer,
-        primary_key=True,
-        autoincrement=True,
-    )
-
-    first_name = Column(String(500), nullable=False)
-    last_name = Column(String(500), nullable=False)
-
-    email = Column(
-        String(500),
-        nullable=False,
-        unique=True,
-    )
-
-    phone = Column("phone_number", String(30), nullable=False)
-
-    # Python attribute: password_hash
-    # Actual SQL column: password
-    password_hash = Column(
-        "password",
-        String(300),
-        nullable=False,
-    )
-
-    customer = relationship(
-        "Customer",
-        back_populates="user",
-        uselist=False,
-    )
 
 
 class Customer(Base):
@@ -94,3 +58,61 @@ class Customer(Base):
         "User",
         back_populates="customer",
     )
+    
+    cards = relationship(
+        "CreditCard",
+        back_populates="customer",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    
+    favorite_movies = relationship(
+        "FavoriteMovie",
+        back_populates="customer",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    
+class CreditCard(Base):
+     __tablename__ = "CreditCard"
+     __table_args__ = {"schema": "cinema_booking"}
+     
+     card_id = Column(
+         Integer,
+         primary_key=True,
+         autoincrement=True
+     )
+     
+     customer_id = Column(
+         Integer,
+         ForeignKey("cinema_booking.Customer.customer_id", ondelete="CASCADE"),
+         nullable=False,
+     )
+     
+     card_number = Column(
+         String(512),
+         nullable=False
+     )
+     
+     cardholder_name = Column(
+         String(100),
+         nullable=False
+     )
+     
+     billing_address = Column(
+         String(200),
+         nullable=False
+     )
+     
+     expiration_date = Column(
+         Date,
+         nullable=False
+     )
+     
+     customer = relationship(
+         "Customer",
+         back_populates="cards"
+     )
+     
+   
+     

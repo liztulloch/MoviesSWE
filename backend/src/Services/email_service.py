@@ -5,7 +5,6 @@ from email.message import EmailMessage
 
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 
@@ -21,10 +20,32 @@ def send_verification_email(email: str, code: str) -> None:
     message["To"] = email
 
     message.set_content(
-        "Welcome to Cinema E Booking!\n\n"
-        f"Your verification code is: {code}\n\n"
+        "Welcome to Cinema E Booking!\n\n" f"Your verification code is: {code}\n\n"
     )
 
+    with smtplib.SMTP(
+        os.environ["SMTP_HOST"],
+        int(os.getenv("SMTP_PORT", "587")),
+        timeout=15,
+    ) as server:
+        server.starttls(context=ssl.create_default_context())
+
+        server.login(
+            os.environ["SMTP_USERNAME"],
+            os.environ["SMTP_PASSWORD"],
+        )
+
+        server.send_message(message)
+
+
+def send_generic_email(subject: str, content: str, email: str) -> None:
+    message = EmailMessage()
+    message["Subject"] = subject 
+    message["From"] = os.environ["EMAIL_FROM"]
+    message["To"] = email
+
+    message.set_content(content)
+    
     with smtplib.SMTP(
         os.environ["SMTP_HOST"],
         int(os.getenv("SMTP_PORT", "587")),

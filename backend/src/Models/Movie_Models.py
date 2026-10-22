@@ -94,3 +94,31 @@ class Showtime(Base):
             f"<Showtime id={self.showtime_id} movie={self.movie_id} "
             f"date={self.show_date} time={self.show_time!r}>"
         )
+        
+class FavoriteMovie(Base):
+    __tablename__ = "FavoriteMovie"
+    __table_args__ = {"schema": "cinema_booking"}
+
+
+    customer_id = Column(
+        Integer,
+        ForeignKey(
+            "cinema_booking.Customer.customer_id",
+            ondelete="CASCADE",
+            onupdate="NO ACTION",
+        ),
+        primary_key=True,
+    )
+
+    movie_id = Column(
+        Integer,
+        ForeignKey(
+            "cinema_booking.Movie.movie_id",
+            ondelete="NO ACTION",
+            onupdate="NO ACTION",
+        ),
+        primary_key=True,
+    )
+
+    customer = relationship("Customer", back_populates="favorite_movies")
+    movie = relationship("Movie")

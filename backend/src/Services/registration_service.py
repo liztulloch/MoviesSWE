@@ -4,15 +4,17 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from ..Models.User_Models import Customer, User
+from ..Models.User_Model import User
+from ..Models.Customer_Models import Customer, CreditCard
 from ..schemas.Registration_schema import RegistrationRequest
 from .email_service import send_verification_email
-from .security_service import hash_password
+from .security_service import hash_password, encrypt_card_number
 
 from .verification_service import (
     create_verification_code,
     verify_verification_code,
 )
+
 
 
 class RegistrationError(Exception):
@@ -68,6 +70,20 @@ def register_user(
             )
 
             db.add(customer)
+            db.flush()
+            
+            for card_data in data.cards:
+                encrypted_number = encrypt_card_number(card_data.card_number.get_secret_value())
+                card = CreditCard(
+                    customer_id = customer.customer_id,
+                    card_number = encrypted_number,
+                    cardholder_name=card_data.cardholder_name.strip(),
+                    billing_address = card_data.billing_address.strip(),
+                    expiration_date = card_data.expiration_date
+                )
+                db.add(card)
+            
+           
 
         # Leaving db.begin() successfully commits both records.
 
