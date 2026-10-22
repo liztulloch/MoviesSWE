@@ -39,8 +39,7 @@ export async function register(input: RegisterInput): Promise<CodeResponse> {
     password: input.password,
     promotion_opt_in: input.receivePromotions,
   };
-  // BACKEND-TODO: the backend requires mailing_address, but the spec (requirement 8) says it's optional,
-  // so it's only sent when filled in. It also doesn't accept cards yet.
+  // Both optional (spec requirement 8). The backend encrypts the card numbers before saving them.
   if (input.address) body.mailing_address = formatAddress(input.address);
   if (input.cards.length) body.cards = input.cards.map(toCardBody);
   const res = await request<{ message?: string } | null>("/reg/register", { method: "POST", body });

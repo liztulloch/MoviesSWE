@@ -77,7 +77,7 @@ export default function PersonalInfoForm({ profile, onSaved }: { profile: Profil
           value={form.lastName} onChange={set("lastName")} error={errors.lastName} />
         <FormField label="Email" type="email" value={profile.email} disabled readOnly
           hint="Your email can't be changed because it's your login." />
-        <FormField label="Phone number" type="tel" required autoComplete="tel" maxLength={30}
+        <FormField label="Phone number" type="tel" required autoComplete="tel" maxLength={20}
           value={form.phone} onChange={set("phone")} error={errors.phone} />
       </div>
       <label className="check">

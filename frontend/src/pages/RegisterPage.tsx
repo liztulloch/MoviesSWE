@@ -113,7 +113,7 @@ export default function RegisterPage() {
             <FormField label="Email" type="email" required autoComplete="email"
               value={form.email} onChange={set("email")} error={errors.email}
               hint="We'll send a code here to confirm it's you." />
-            <FormField label="Phone number" type="tel" required autoComplete="tel" maxLength={30} placeholder="706-555-0123"
+            <FormField label="Phone number" type="tel" required autoComplete="tel" maxLength={20} placeholder="706-555-0123"
               value={form.phone} onChange={set("phone")} error={errors.phone} />
             <div className="span-2">
               <FormField label="Password" type="password" required autoComplete="new-password" maxLength={128}
