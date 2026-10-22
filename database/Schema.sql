@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`User` (
 ) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`Customer` (
-    `mailing_address` VARCHAR(200) NOT NULL,
+    `mailing_address` VARCHAR(200) NULL,
     `customer_id` INT NOT NULL,
     `status` ENUM(
         'Active',
@@ -130,6 +130,7 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`Customer` (
     `confirmation_code` VARCHAR(100),
     `reset_code` VARCHAR(100),
     `receive_promotion` BOOLEAN NOT NULL DEFAULT FALSE,
+    UNIQUE (`mailing_address`),
     PRIMARY KEY (`customer_id`),
     CONSTRAINT `fk_customer_user1`
         FOREIGN KEY (`customer_id`)
