@@ -6,6 +6,9 @@ class LoginRequest(BaseModel):
 
     email: EmailStr
     password: SecretStr
+    first_name: str
+    last_name: str
+    role: str
 
 
 class LoginResponse(BaseModel):
