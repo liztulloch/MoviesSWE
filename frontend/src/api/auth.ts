@@ -61,25 +61,44 @@ export async function resendVerification(email: string): Promise<CodeResponse> {
 
 export async function login(email: string, password: string): Promise<LoginResult> {
   if (USE_MOCK_AUTH) return mock.login(email, password);
-  // BACKEND-TODO: no login route yet. Assumes POST /auth/login returns
-  // { access_token, user: { user_id, first_name, last_name, email, role } }.
+  // POST /auth/login (LoginRequest in Auth_schemas.py) returns { access_token, token_type }.
   const res = await request<any>("/auth/login", { method: "POST", body: { email, password } });
+  const token: string = res.access_token ?? res.token;
+  // BACKEND-TODO: the login response has no name or role yet, so the name is loaded from the profile
+  // and everyone is treated as a customer. Admins can't log in until the backend sends a role.
   const u = res.user ?? res;
-  return {
-    token: res.access_token ?? res.token,
-    user: {
-      id: u.user_id ?? u.id,
-      firstName: u.first_name ?? "",
-      lastName: u.last_name ?? "",
-      email: u.email ?? email,
-      role: String(u.role).toLowerCase() === "admin" ? "admin" : "customer",
-    },
+  const user: SessionUser = {
+    id: u.user_id ?? u.id ?? userIdFromToken(token),
+    firstName: u.first_name ?? "",
+    lastName: u.last_name ?? "",
+    email: u.email ?? email,
+    role: String(u.role).toLowerCase() === "admin" ? "admin" : "customer",
   };
+  if (!user.firstName) {
+    try {
+      const profile = await request<any>("/user/me", { token });
+      user.firstName = profile.first_name ?? "";
+      user.lastName = profile.last_name ?? "";
+    } catch {
+      // Still logged in, just without a name to show.
+    }
+  }
+  return { token, user };
+}
+
+// The token's middle part holds the user id as "sub", e.g. { "sub": "12", "exp": ... }.
+function userIdFromToken(token: string): number | undefined {
+  try {
+    const part = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    return Number(JSON.parse(atob(part)).sub) || undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export async function logout(): Promise<void> {
   if (USE_MOCK_AUTH) return mock.logout();
-  // BACKEND-TODO: assumes POST /auth/logout ends the session on the server.
+  // POST /auth/logout. The token just stops being used; the backend has no list of sessions to clear.
   await request("/auth/logout", { method: "POST" });
 }
 

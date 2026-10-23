@@ -30,7 +30,7 @@ export default function Navbar() {
         {user?.role === "admin" && <NavLink to="/admin">Admin portal</NavLink>}
         {user && (
           <>
-            <span className="nav-user">Hi, {user.firstName}</span>
+            {user.firstName && <span className="nav-user">Hi, {user.firstName}</span>}
             <button type="button" className="btn btn-sm" onClick={handleLogout}>Log out</button>
           </>
         )}

@@ -60,10 +60,15 @@ function toApiError(status: number, data: any): ApiError {
   return new ApiError(status, `Something went wrong (error ${status}). Please try again.`);
 }
 
-export async function request<T>(path: string, options: { method?: string; body?: unknown } = {}): Promise<T> {
+// options.token sends a specific token instead of the saved one (used right after login, before it's saved).
+export async function request<T>(
+  path: string,
+  options: { method?: string; body?: unknown; token?: string } = {}
+): Promise<T> {
   const headers: Record<string, string> = {};
   if (options.body !== undefined) headers["Content-Type"] = "application/json";
-  if (token) headers.Authorization = `Bearer ${token}`;
+  const authToken = options.token ?? token;
+  if (authToken) headers.Authorization = `Bearer ${authToken}`;
 
   let res: Response;
   try {
