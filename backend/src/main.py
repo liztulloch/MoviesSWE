@@ -13,6 +13,8 @@ from fastapi.middleware.cors import CORSMiddleware
 # Import the router using the package layout under `src`.
 from src.Routes import router
 from src.Routes.Registration_routes import router as registration_router
+from src.Routes import Profile_routes
+from src.Routes import Auth_routes
 
 app = FastAPI(title="Cinema Booking API", version="0.1.0")
 
@@ -26,6 +28,8 @@ app.add_middleware(
 
 app.include_router(router)
 app.include_router(registration_router)
+app.include_router(Profile_routes.router)
+app.include_router(Auth_routes.router)
 
 
 @app.get("/health", tags=["health"])

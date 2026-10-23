@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 from ..Models.User_Model import User
 from ..Models.Customer_Models import Customer
 from ..Models.Movie_Models import FavoriteMovie, Movie
-from ..schemas.Profile_schema import ProfileSchema, ProfileUpdateRequest, FavoriteMovieRequest, ChangePasswordRequest
+from ..Schemas.Profile_schema import ProfileSchema, ProfileUpdateRequest, FavoriteMovieRequest, ChangePasswordRequest
 from ..Services.security_service import hash_password, verify_password
 from ..Services.email_service import send_generic_email
 
