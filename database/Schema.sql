@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS `CreditCard`;
 DROP TABLE IF EXISTS `Booking`;
 DROP TABLE IF EXISTS `Promotion`;
 DROP TABLE IF EXISTS `Admin`;
+DROP TABLE IF EXISTS `UserSession`;
 DROP TABLE IF EXISTS `Customer`;
 DROP TABLE IF EXISTS `User`;
 DROP TABLE IF EXISTS `Seat`;
@@ -116,8 +117,20 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`User` (
     `email` VARCHAR(500) NOT NULL,
     `phone_number` VARCHAR(20) NOT NULL,
     `password` VARCHAR(300) NOT NULL,
+    `role` VARCHAR(50) NOT NULL,
     UNIQUE(`email`),
     PRIMARY KEY (`user_id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`UserSession` (
+    `session_id` INT NOT NULL AUTO_INCREMENT,
+    `user_id` INT NOT NULL,
+    `expires_at` DATETIME NOT NULL,
+    PRIMARY KEY (`session_id`),
+    CONSTRAINT `fk_usersession_user`
+        FOREIGN KEY (`user_id`)
+        REFERENCES `cinema_booking`.`User` (`user_id`)
+        ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`Customer` (
