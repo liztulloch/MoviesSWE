@@ -7,3 +7,5 @@ python-dotenv>=1
 email-validator
 pwdlib[argon2]
 cryptography
+PyJWT
+bcrypt

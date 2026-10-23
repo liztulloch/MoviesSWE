@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from ..Database import get_db
 from ..Models.User_Model import User
-from ..schemas.Profile_schema import (
+from ..Schemas.Profile_schema import (
     ProfileUpdateRequest,
     ProfileSchema,
     FavoriteMovieRequest,
@@ -22,7 +22,7 @@ from ..Services.profile_service import (
 )
 
 # To be implemented with authentication.
-from ..dependencies import get_current_user
+from ..Dependencies.auth_dependency import get_authenticated_user_id
 
 
 router = APIRouter(
@@ -33,13 +33,13 @@ router = APIRouter(
 
 @router.get("/me", response_model=ProfileSchema)
 def read_profile(
-    current_user: User = Depends(get_current_user),
+    user_id: int = Depends(get_authenticated_user_id),
     db: Session = Depends(get_db),
 ):
     try:
         return get_customer_profile(
             db,
-            current_user.user_id,
+            user_id,
         )
 
     except ProfileError as error:
@@ -52,13 +52,13 @@ def read_profile(
 @router.put("/me")
 def edit_profile(
     data: ProfileUpdateRequest,
-    current_user: User = Depends(get_current_user),
+    user_id: int = Depends(get_authenticated_user_id),
     db: Session = Depends(get_db),
 ):
     try:
         return update_customer_profile(
             db,
-            current_user.user_id,
+            user_id,
             data,
         )
 
@@ -72,13 +72,13 @@ def edit_profile(
 @router.put("/change-password")
 def change_my_password(
     data: ChangePasswordRequest,
-    current_user: User = Depends(get_current_user),
+    user_id: int = Depends(get_authenticated_user_id),
     db: Session = Depends(get_db),
 ):
     try:
         return change_password(
             db,
-            current_user.user_id,
+            user_id,
             data,
         )
 
@@ -91,13 +91,13 @@ def change_my_password(
 @router.post("/favorite-movie")
 def add_fav(
     data: FavoriteMovieRequest,
-    current_user: User = Depends(get_current_user),
+    user_id: int = Depends(get_authenticated_user_id),
     db: Session = Depends(get_db),
 ):
     try:
         return add_movie_to_favorite(
             db,
-            current_user.user_id,
+            user_id,
             data,
         )
 
@@ -110,13 +110,13 @@ def add_fav(
 @router.delete("/favorite-movie")
 def remove_fav(
     data: FavoriteMovieRequest,
-    current_user: User = Depends(get_current_user),
+    user_id: int = Depends(get_authenticated_user_id),
     db: Session = Depends(get_db),
 ):
     try:
         return remove_movie_from_favorite(
             db,
-            current_user.user_id,
+            user_id,
             data,
         )
 
