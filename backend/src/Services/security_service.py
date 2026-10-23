@@ -39,13 +39,14 @@ def decrypt_card_number(encrypted_card_number: str) -> str:
 
 
 
-def create_access_token(user_id: int) -> str:
-    expiration = datetime.now(timezone.utc) + timedelta(
-        minutes=JWT_EXPIRATION_MINUTES
-    )
-
+def create_access_token(
+    user_id: int,
+    session_id: int,
+    expiration: datetime,
+) -> str:
     payload = {
         "sub": str(user_id),
+        "sid": session_id,
         "exp": expiration
     }
 
@@ -56,10 +57,10 @@ def create_access_token(user_id: int) -> str:
     )
 
 
-def decode_access_token(token: str) -> int:
-    payload = jwt.decode(
+def decode_access_token(token: str) -> dict:
+    return jwt.decode(
         token,
         JWT_SECRET_KEY,
-        algorithms=[JWT_ALGORITHM]
+        algorithms=[JWT_ALGORITHM],
+        options={"require": ["sub", "sid", "exp"]},
     )
-    return int(payload["sub"])

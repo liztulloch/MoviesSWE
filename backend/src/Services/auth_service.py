@@ -1,66 +1,70 @@
+from datetime import datetime, timedelta, timezone
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..Models.User_Model import User
+from ..Models.User_Model import User, Admin
 from ..Models.Customer_Models import Customer
-from .security_service import verify_password, create_access_token
+from ..Models.Session_Model import UserSession
+from .security_service import (
+    verify_password,
+    create_access_token,
+    JWT_EXPIRATION_MINUTES,
+)
+
 
 class AuthError(Exception):
     def __init__(self, message: str, status_code: int):
         super().__init__(message)
         self.message = message
         self.status_code = status_code
-def login_user(
-    db: Session,
-    email: str,
-    password: str,
-) -> dict:
 
+
+def login_user(db: Session, email: str, password: str) -> dict:
     email = email.strip().lower()
-
-    # 1. Look up user by email
-    user = db.scalar(
-        select(User).where(User.email == email)
-    )
-
-    # 2. Email doesn't exist
-    if user is None:
-        raise AuthError(
-            message="Invalid email or password.",
-            status_code=401
+    try:
+        # Serialize login with password changes/reset on the same account.
+        user = db.scalar(
+            select(User).where(User.email == email).with_for_update()
         )
+        if user is None or not verify_password(password, user.password_hash):
+            raise AuthError("Invalid email or password.", 401)
 
-    # 3. Email exists, but password is wrong
-    if not verify_password(password, user.password_hash):
-        raise AuthError(
-            message="Invalid email or password.",
-            status_code=401
+        if user.role == "Customer":
+            customer = db.get(Customer, user.user_id)
+            if customer is None:
+                raise AuthError("Customer account not found.", 403)
+            if customer.status == "Suspended":
+                raise AuthError("Your account is suspended.", 403)
+            if customer.status != "Active":
+                raise AuthError("Please verify your account before logging in.", 403)
+        elif user.role == "Admin":
+            if db.get(Admin, user.user_id) is None:
+                raise AuthError("Admin account not found.", 403)
+        else:
+            raise AuthError("This account does not have a valid role.", 403)
+
+        expiration = datetime.now(timezone.utc) + timedelta(
+            minutes=JWT_EXPIRATION_MINUTES
         )
-
-    # 4. Check customer/account
-    customer = db.get(
-        Customer,
-        user.user_id
-    )
-
-    if customer is None:
-        raise AuthError(
-            message="Customer account not found.",
-            status_code=404
+        login_session = UserSession(
+            user_id=user.user_id,
+            expires_at=expiration.replace(tzinfo=None),
         )
-
-    if customer.status != "Active":
-        raise AuthError(
-            message="Please verify your account before logging in.",
-            status_code=403
+        db.add(login_session)
+        db.flush()  # Obtain MySQL's auto-increment session ID.
+        token = create_access_token(
+            user.user_id, login_session.session_id, expiration
         )
-
-    # 5. Everything is valid → create JWT
-    token = create_access_token(user.user_id)
-
-    return {
-    "access_token": token,
-    "token_type": "bearer",
-    "first_name": user.first_name,
-    "last_name": user.last_name,
-}
+        response = {
+            "access_token": token,
+            "token_type": "bearer",
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "role": user.role,
+        }
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    return response

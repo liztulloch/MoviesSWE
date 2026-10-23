@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
-from ..Dependencies.auth_dependency import get_authenticated_user_id
+from ..dependencies.auth_dependency import get_current_session
+from ..Models.Session_Model import UserSession
 
 
-from ..Schemas.Auth_schemas import LoginRequest, LoginResponse
+from ..schemas.Auth_schemas import LoginRequest, LoginResponse
 from ..Services.auth_service import AuthError, login_user
 from ..Database import get_db
 
@@ -38,8 +40,20 @@ def login(
 
 @router.post("/logout")
 def logout(
-    user_id: int = Depends(get_authenticated_user_id)
+    login_session: UserSession = Depends(get_current_session),
+    db: Session = Depends(get_db),
 ):
+    try:
+        db.execute(
+            delete(UserSession).where(
+                UserSession.session_id == login_session.session_id
+            )
+        )
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
     return {
         "message": "Logged out successfully."
     }

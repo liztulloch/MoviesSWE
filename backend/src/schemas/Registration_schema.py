@@ -1,37 +1,5 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, SecretStr, field_validator
-from datetime import date
-
-class RegistrationCardRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    cardholder_name: str = Field(
-        min_length=1,
-        max_length=100,
-        pattern=r"\S"
-    )
-
-    card_number: SecretStr = Field(
-        min_length=12,
-        max_length=19,
-    )
-
-    billing_address: str = Field(
-        min_length=1,
-        max_length=200,
-        pattern=r"\S",
-    )
-
-    expiration_date: date
-
-    @field_validator("card_number")
-    @classmethod
-    def validate_card_number(cls, value: SecretStr) -> SecretStr:
-        number = value.get_secret_value()
-
-        if any(character not in "0123456789" for character in number):
-            raise ValueError("Card number must contain only digits.")
-
-        return value
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, SecretStr
+from .Card_schema import CardRequest as RegistrationCardRequest
 
 class RegistrationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")

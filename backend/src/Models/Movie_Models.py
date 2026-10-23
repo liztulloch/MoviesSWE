@@ -17,9 +17,9 @@ class Movie(Base):
     movie_id = Column(Integer, primary_key=True, autoincrement=True)
     poster = Column(String(500), nullable=True)
     title = Column(String(255), nullable=False)
-    mpaa_rating = Column(String(100), nullable=True)
+    mpaa_rating = Column(String(10), nullable=True)
     synopsis = Column(Text, nullable=True)
-    genre = Column(String(100), nullable=True)
+    genre = Column(String(255), nullable=False)
     status = Column(String(50), nullable=False)
     trailer = Column(String(500), nullable=True)
     trailer_image = Column(String(500), nullable=True)
@@ -75,7 +75,7 @@ class MovieRole(Base):
 class Showtime(Base):
     __tablename__ = "Showtime"
     __table_args__ = (
-        UniqueConstraint("movie_id", "hall_id", "show_date", "show_time"),
+        UniqueConstraint("hall_id", "show_date", "show_time"),
         {"schema": "cinema_booking"},
     )
 
@@ -122,3 +122,11 @@ class FavoriteMovie(Base):
 
     customer = relationship("Customer", back_populates="favorite_movies")
     movie = relationship("Movie")
+    
+class TheaterHall(Base):
+    __tablename__ = "TheaterHall"
+    __table_args__ = {"schema": "cinema_booking"}
+    
+    hall_id = Column(Integer, primary_key=True, autoincrement=True)
+    hall_number = Column(Integer, nullable=False, unique=True)
+    

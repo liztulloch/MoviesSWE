@@ -1,15 +1,18 @@
 import smtplib
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import Session, joinedload
 
 
 from ..Models.User_Model import User
 from ..Models.Customer_Models import Customer
+from ..Models.Session_Model import UserSession
 from ..Models.Movie_Models import FavoriteMovie, Movie
-from ..Schemas.Profile_schema import ProfileSchema, ProfileUpdateRequest, FavoriteMovieRequest, ChangePasswordRequest
+from ..schemas.Profile_schema import ProfileSchema, ProfileUpdateRequest, FavoriteMovieRequest, ChangePasswordRequest, ForgotPasswordRequest, ResetPasswordRequest
 from ..Services.security_service import hash_password, verify_password
 from ..Services.email_service import send_generic_email
+from .verification_service import create_verification_code, verify_verification_code
+
 
 class ProfileError(Exception):
     def __init__(self, message: str, status_code: int):
@@ -337,6 +340,10 @@ def change_password(
         # Invalidate any outstanding forgot-password code.
         customer.password_reset_code_hash = None
 
+        db.execute(
+            delete(UserSession).where(UserSession.user_id == user.user_id)
+        )
+
         email = user.email
 
         db.commit()
@@ -363,5 +370,139 @@ def change_password(
 
     return {
         "message": "Your password was changed successfully.",
+        "notification_sent": True,
+    }
+
+
+def forgot_password(
+    db: Session,
+    data: ForgotPasswordRequest,
+) -> dict:
+    email = str(data.email).strip().lower()
+    code = None
+
+    with db.begin():
+        user = db.scalar(
+            select(User)
+            .where(User.email == email)
+            .with_for_update()
+        )
+
+        if user is not None:
+            customer = db.get(
+                Customer,
+                user.user_id,
+                with_for_update=True,
+            )
+
+            if customer is not None and customer.status == "Active":
+                code = create_verification_code()
+
+                customer.password_reset_code_hash = hash_password(code)
+
+    # Send after the reset-code hash is saved.
+    if code is not None:
+        try:
+            send_generic_email(
+                "Your Cinema password reset code",
+                (
+                    f"Your password-reset code is: {code}"
+                ),
+                email,
+            )
+
+        except (smtplib.SMTPException, OSError) as error:
+            raise ProfileError(
+                "The password-reset email could not be sent. Please try again.",
+                503,
+            ) from error
+
+    return {
+        "message": (
+            "If you have a verfied account, you will receive a password-reset email."
+        )
+    }
+
+
+def reset_password(
+    db: Session,
+    data: ResetPasswordRequest,
+) -> dict:
+    email = str(data.email).strip().lower()
+
+    with db.begin():
+        user = db.scalar(
+            select(User)
+            .where(User.email == email)
+            .with_for_update()
+        )
+
+        if user is None:
+            raise ProfileError(
+                "Invalid password-reset request.",
+                400,
+            )
+
+        customer = db.get(
+            Customer,
+            user.user_id,
+            with_for_update=True,
+        )
+
+        if customer is None or customer.status != "Active":
+            raise ProfileError(
+                "Invalid password-reset request.",
+                400,
+            )
+
+        if customer.password_reset_code_hash is None:
+            raise ProfileError(
+                "Please request a password-reset code first.",
+                400,
+            )
+
+        is_correct = verify_verification_code(
+            data.code,
+            customer.password_reset_code_hash,
+        )
+
+        if not is_correct:
+            raise ProfileError(
+                "Incorrect password-reset code.",
+                400,
+            )
+
+        user.password_hash = hash_password(
+            data.new_password.get_secret_value()
+        )
+
+        # Prevent reuse of the reset code.
+        customer.password_reset_code_hash = None
+
+        db.execute(
+            delete(UserSession).where(UserSession.user_id == user.user_id)
+        )
+
+    # Notify after the password change is committed.
+    try:
+        send_generic_email(
+            "Your Cinema password was reset",
+            (
+                "Your Cinema account password was reset.\n\n"
+            ),
+            email,
+        )
+
+    except (smtplib.SMTPException, OSError):
+        return {
+            "message": (
+                "Your password was reset, but the notification "
+                "email could not be sent."
+            ),
+            "notification_sent": False,
+        }
+
+    return {
+        "message": "Your password was reset successfully.",
         "notification_sent": True,
     }

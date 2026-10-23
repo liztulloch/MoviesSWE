@@ -53,7 +53,49 @@ curl -sS 'http://127.0.0.1:8000/movies/search?name=spider'
 
 When a query returns no results the API sets an `X-Message: No movies found` header and returns an empty JSON list `[]`.
 
+## Saved payment cards
+
+All card-management requests require `Authorization: Bearer <access_token>`
+and an active customer account.
+
+- `POST /user/cards` accepts `cardholder_name`, `card_number`,
+  `billing_address`, and `expiration_date` (`YYYY-MM-DD`). It returns the saved
+  card with status 201, or 409 when the customer already has three cards.
+- `DELETE /user/cards/{card_id}` removes an owned card and returns status 200.
+  A missing card or another customer's card returns 404.
+- `GET /user/me` now includes a `cards` list. Each item contains `card_id`,
+  `cardholder_name`, `brand`, `last4`, `billing_address`, and `expiration_date`.
+  Responses omit full card numbers and encrypted card numbers.
+
+Registration and card additions share validation: 13–19 ASCII digits, a valid
+Luhn checksum, and an expiration month that has not passed. Cards are valid
+through the end of the expiration month. Invalid input returns 422.
+Card numbers remain encrypted in the database. No database migration is needed.
+
 ## Troubleshooting
+Before using login with database-backed sessions, apply
+`database/migrations/001_user_sessions.sql` from the repository root in MySQL
+Workbench (or your MySQL client). It adds `UserSession` without dropping existing
+tables. The full `database/Schema.sql` is a destructive fresh-setup script and
+also includes the session table.
+
+Login issues a signed JWT containing a MySQL-generated integer session ID.
+Logout deletes only that session. Changing or resetting a password deletes all
+of that user's sessions in the same transaction as the password update. The
+frontend should discard its token and show login after these operations.
+Previously issued tokens without a session ID are rejected.
+
+Session `expires_at` values represent UTC. Expired sessions are rejected even
+before cleanup; old expired rows can be removed with:
+
+```sql
+DELETE FROM cinema_booking.UserSession WHERE expires_at <= UTC_TIMESTAMP();
+```
+
+Run the isolated tests from `backend` with
+`python -m unittest discover -s tests -v`. Session tests use in-memory SQLite,
+temporary test secrets, and mocked email delivery, not the live MySQL database.
+
 - `ModuleNotFoundError: No module named 'app'` — run `uvicorn src.main:app` from `backend`.
 - `pymysql.err.OperationalError (1045)` — check `DATABASE_URL` credentials.
 - If you want me to seed a local `sqlite` database with sample data, ask and I will add a small seed script.

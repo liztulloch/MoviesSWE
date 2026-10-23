@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from ..Models.User_Model import User
 from ..Models.Customer_Models import Customer, CreditCard
-from ..Schemas.Registration_schema import RegistrationRequest
+from ..schemas.Registration_schema import RegistrationRequest
 from .email_service import send_verification_email
 from .security_service import hash_password, encrypt_card_number
 
@@ -52,6 +52,7 @@ def register_user(
                 email=email,
                 phone=data.phone.strip(),
                 password_hash=password_hash,
+                role="Customer",
             )
 
             db.add(user)

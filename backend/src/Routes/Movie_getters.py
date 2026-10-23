@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from ..Database import get_db
 from ..Models.Movie_Models import Movie, MovieRole
-from ..Schemas.Movie_schema import MovieSchema
+from ..schemas.Movie_schema import MovieSchema
 
 
 router = APIRouter(

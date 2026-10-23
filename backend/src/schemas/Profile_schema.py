@@ -12,6 +12,7 @@ from pydantic import (
 
 from ..Models.Customer_Models import Customer
 from .Movie_schema import MovieSchema
+from .Card_schema import SavedCardSchema
 
 class ProfileSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -24,7 +25,8 @@ class ProfileSchema(BaseModel):
     mailing_address: str | None
     receive_promotion: bool
     favorite_movies: list[MovieSchema] = Field(default_factory=list)
-    
+    cards: list[SavedCardSchema] = Field(default_factory=list)
+    role: str
 
     @classmethod
     def from_customer(cls, customer: Customer) -> "ProfileSchema":
@@ -38,6 +40,8 @@ class ProfileSchema(BaseModel):
             phone=user.phone,
             mailing_address=customer.mailing_address,
             receive_promotion=customer.receive_promotion,
+            role=user.role,
+            cards=[SavedCardSchema.from_card(card) for card in customer.cards],
             favorite_movies=[
                 MovieSchema.from_movie(favorite.movie)
                 for favorite in customer.favorite_movies
@@ -92,3 +96,18 @@ class ChangePasswordRequest(BaseModel):
         max_length=300,
     )
     
+class ForgotPasswordRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    
+    email: EmailStr 
+
+class ResetPasswordRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    email: EmailStr
+    code: str = Field(pattern=r"^[0-9]{4}$")
+
+    new_password: SecretStr = Field(
+        min_length=8,
+        max_length=300,
+    )

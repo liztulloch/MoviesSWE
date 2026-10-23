@@ -31,7 +31,7 @@ class User(Base):
     )
 
     phone = Column("phone_number", String(20))
-
+    
     # Python attribute: password_hash
     # Actual SQL column: password
     password_hash = Column(
@@ -39,11 +39,26 @@ class User(Base):
         String(300),
         nullable=False,
     )
+    
+    role = Column(
+        String(50),
+        nullable=False
+    )
 
     customer = relationship(
         "Customer",
         back_populates="user",
         uselist=False,
     )
+    
 
+class Admin(Base):
+    __tablename__ = "Admin"
+    __table_args__ = {"schema": "cinema_booking"}
 
+    admin_id = Column(
+        Integer,
+        ForeignKey("cinema_booking.User.user_id"),
+        primary_key=True,
+        nullable=False,
+    )
