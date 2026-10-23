@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`User` (
     `first_name` VARCHAR(500) NOT NULL,
     `last_name` VARCHAR(500) NOT NULL,
     `email` VARCHAR(500) NOT NULL,
-    `phone_number` VARCHAR(20) NOT NULL,
+    `phone_number` VARCHAR(20) NULL,
     `password` VARCHAR(300) NOT NULL,
     UNIQUE(`email`),
     PRIMARY KEY (`user_id`)
