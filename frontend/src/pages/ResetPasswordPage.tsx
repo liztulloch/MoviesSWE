@@ -9,7 +9,6 @@ import { codeError, confirmError, emailError, hasErrors, passwordError } from ".
 
 type Field = "email" | "code" | "password" | "confirm";
 
-// Step 2 of resetting a password: the code from the email plus the new password.
 export default function ResetPasswordPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();

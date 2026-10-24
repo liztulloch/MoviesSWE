@@ -7,7 +7,7 @@ import { FavoritesProvider } from "./context/FavoritesContext";
 import "./styles.css";
 
 // Starts the React app. BrowserRouter lets the app switch pages without reloading.
-// AuthProvider shares who is logged in. FavoritesProvider needs it, so it goes inside.
+// FavoritesProvider reads the logged-in user, so it goes inside AuthProvider.
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>

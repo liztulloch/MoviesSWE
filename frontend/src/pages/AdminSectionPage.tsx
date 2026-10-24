@@ -1,7 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { ADMIN_MENU } from "../adminMenu";
 
-// Placeholder for each admin menu option. These get built in a later sprint.
 export default function AdminSectionPage() {
   const { section } = useParams();
   const item = ADMIN_MENU.find((m) => m.path === section);

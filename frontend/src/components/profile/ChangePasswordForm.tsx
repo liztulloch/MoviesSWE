@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { changePassword } from "../../api/profile";
 import { ApiError, messageOf } from "../../api/client";
+import { useAuth } from "../../context/AuthContext";
 import Alert, { type Notice } from "../Alert";
 import FormField, { RequiredNote } from "../FormField";
 import PasswordRules from "../PasswordRules";
@@ -9,8 +11,10 @@ import { confirmError, hasErrors, passwordError } from "../../validation";
 type Field = "currentPassword" | "newPassword" | "confirm";
 const EMPTY: Record<Field, string> = { currentPassword: "", newPassword: "", confirm: "" };
 
-// Changing the password requires the current one, so someone using an unlocked computer can't change it.
+// The backend ends every session for this account on a password change (this one too), so the user logs in again.
 export default function ChangePasswordForm() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const [form, setForm] = useState(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
   const [notice, setNotice] = useState<Notice | null>(null);
@@ -31,14 +35,15 @@ export default function ChangePasswordForm() {
     setSaving(true);
     try {
       await changePassword(form.currentPassword, form.newPassword);
-      setForm(EMPTY);
-      setNotice({ kind: "success", text: "Your password was changed. Use the new one next time you log in." });
     } catch (err) {
       if (err instanceof ApiError) setErrors(err.fieldErrors);
       setNotice({ kind: "error", text: messageOf(err) });
-    } finally {
       setSaving(false);
+      return;
     }
+    const message = "Your password was changed. Please log in with your new password.";
+    await logout(message);
+    navigate("/login", { replace: true, state: { message } });
   }
 
   return (

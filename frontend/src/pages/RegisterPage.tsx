@@ -16,8 +16,6 @@ import { EMPTY_ADDRESS, MAX_CARDS, emptyCard, type Address, type CardInput } fro
 
 type Field = "firstName" | "lastName" | "email" | "phone" | "password" | "confirm";
 
-// Sign up page. Account details are required. Home address and up to 3 cards are optional.
-// After signing up the account is Inactive until the user enters the code from their email.
 export default function RegisterPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -40,7 +38,6 @@ export default function RegisterPage() {
     setCardErrs((list) => list.filter((_, j) => j !== i));
   };
 
-  // Checks every field at once so the user sees all problems together.
   function validate() {
     const e = {
       firstName: required(form.firstName, "First name"),
@@ -82,7 +79,7 @@ export default function RegisterPage() {
         state: { message: res.message, devCode: res.devCode },
       });
     } catch (err) {
-      // 503: the account was saved but the email didn't send, so go verify and use "Send a new code".
+      // 503: the account was saved but the email didn't send, so go verify and resend the code.
       if (err instanceof ApiError && err.status === 503) {
         navigate(`/verify-email?email=${encodeURIComponent(email)}`, { state: { message: err.message, isError: true } });
         return;

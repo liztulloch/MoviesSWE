@@ -5,14 +5,12 @@ import { useFavorites } from "../../context/FavoritesContext";
 import MovieCard from "../MovieCard";
 import type { Movie } from "../../types";
 
-// The customer's favorite movies. Each card has the same heart as when browsing, so tapping it removes the movie.
 export default function FavoritesList() {
   const { ids, loading: idsLoading } = useFavorites();
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load the movie details for each favorite id.
   useEffect(() => {
     let cancelled = false;
     Promise.all([...ids].map((id) => getMovie(id)))

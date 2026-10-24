@@ -1,6 +1,4 @@
-// Pretend backend for accounts, profiles, cards and favorites, used until the real routes exist.
-// Data is saved in this browser's localStorage, so it survives a refresh but isn't shared with anyone.
-// Each function behaves like the backend route it stands in for, error messages included.
+// Stand-in backend for accounts, used when VITE_USE_MOCK_AUTH isn't "false". Data lives in this browser's localStorage.
 //
 // Ready-made accounts (password in brackets):
 //   admin@cinema.com     [Admin1234]      admin, lands on the admin portal
@@ -38,16 +36,15 @@ interface MockDb {
 
 const DB_KEY = "ces-mock-db";
 
-// SHA-256 so passwords and codes aren't stored as plain text. The real backend uses a proper password hash.
+// So passwords and codes aren't stored as plain text in localStorage.
 async function hash(text: string) {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return Array.from(new Uint8Array(bytes), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// A short wait so loading states ("Saving…") show up like they would with a real server.
+// So loading states ("Saving…") show up like with a real server.
 const pause = () => new Promise((resolve) => setTimeout(resolve, 300));
 
-// Same 4-digit format as the backend's email codes.
 const newCode = () => String(Math.floor(1000 + Math.random() * 9000));
 
 const sampleAddress: Address = { street: "100 Main St", city: "Athens", state: "GA", zip: "30601" };
@@ -77,7 +74,6 @@ async function seed(): Promise<MockDb> {
   };
 }
 
-// Loaded once, then kept in memory. Every change is written back with persist().
 let dbPromise: Promise<MockDb> | null = null;
 
 function getDb(): Promise<MockDb> {
@@ -86,7 +82,7 @@ function getDb(): Promise<MockDb> {
       const saved = localStorage.getItem(DB_KEY);
       if (saved) return JSON.parse(saved) as MockDb;
     } catch {
-      // Storage blocked or data unreadable, so start fresh.
+      // Unreadable or blocked: start fresh.
     }
     const db = await seed();
     persist(db);
@@ -99,7 +95,7 @@ function persist(db: MockDb) {
   try {
     localStorage.setItem(DB_KEY, JSON.stringify(db));
   } catch {
-    // Storage blocked: changes still work until the page reloads.
+    // Blocked: changes last until the page reloads.
   }
 }
 
@@ -113,7 +109,7 @@ const toSessionUser = (u: MockUser): SessionUser => ({
   role: u.role,
 });
 
-// Copies, not the stored objects, so the page can't change the mock's data by accident (a real response is a copy too).
+// Copies, so the page can't change the mock's data by accident (a real response is a copy too).
 const toProfile = (u: MockUser): Profile => ({
   firstName: u.firstName,
   lastName: u.lastName,
@@ -124,7 +120,7 @@ const toProfile = (u: MockUser): Profile => ({
   cards: u.cards.map((c) => ({ ...c, billingAddress: { ...c.billingAddress } })),
 });
 
-// Only the brand and last 4 digits are kept, which is all the real backend should ever send back.
+// Only the brand and last 4 digits are kept, like the real backend's response.
 function saveCard(db: MockDb, input: CardInput): SavedCard {
   const digits = input.number.replace(/\D/g, "");
   return {
@@ -136,7 +132,6 @@ function saveCard(db: MockDb, input: CardInput): SavedCard {
   };
 }
 
-// The logged-in customer, looked up from the token like the backend's get_current_user.
 async function currentCustomer() {
   await pause();
   const db = await getDb();
@@ -146,8 +141,6 @@ async function currentCustomer() {
   if (user.role !== "customer") throw new ApiError(403, "Only customer accounts have a profile.");
   return { db, user };
 }
-
-// Accounts
 
 export async function register(input: RegisterInput): Promise<CodeResponse> {
   await pause();
@@ -163,7 +156,7 @@ export async function register(input: RegisterInput): Promise<CodeResponse> {
   db.users.push({
     id: db.nextUserId++,
     role: "customer",
-    status: "Inactive", // becomes Active once the email code is entered
+    status: "Inactive",
     firstName: input.firstName,
     lastName: input.lastName,
     email,
@@ -252,8 +245,6 @@ export async function resetPassword(email: string, code: string, newPassword: st
   persist(db);
 }
 
-// Profile
-
 export async function getProfile(): Promise<Profile> {
   const { user } = await currentCustomer();
   return toProfile(user);
@@ -296,8 +287,6 @@ export async function changePassword(currentPassword: string, newPassword: strin
   user.passwordHash = await hash(newPassword);
   persist(db);
 }
-
-// Favorites
 
 export async function getFavoriteIds(): Promise<number[]> {
   const { user } = await currentCustomer();

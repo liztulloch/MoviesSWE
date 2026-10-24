@@ -7,11 +7,9 @@ interface Props {
   value: CardInput;
   onChange: (card: CardInput) => void;
   errors?: CardErrors;
-  homeAddress?: Address | null; // lets the user copy it into the billing address
+  homeAddress?: Address | null;
 }
 
-// Inputs for one payment card plus its billing address.
-// The number and expiry are formatted while typing ("4111 1111 …", "12/28").
 export default function CardFields({ value, onChange, errors = {}, homeAddress }: Props) {
   const digits = value.number.replace(/\D/g, "");
   const brand = digits.length >= 2 ? cardBrand(digits) : "";

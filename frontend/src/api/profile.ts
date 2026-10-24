@@ -1,11 +1,9 @@
-// Logged-in customer routes: profile, payment cards, password change and favorite movies.
-// In mock mode these call mockServer.ts instead (see USE_MOCK_AUTH in client.ts).
-// Lines marked BACKEND-TODO are guesses about routes that don't exist yet. Confirm them with the backend team.
+// Request fields match the backend schemas (Profile_schema.py, Card_schema.py).
 import { request, USE_MOCK_AUTH } from "./client";
 import * as mock from "./mockServer";
 import { EMPTY_ADDRESS, type Address, type CardInput, type Profile, type SavedCard } from "../types";
 
-// The fields the edit profile form can change. Email is left out on purpose.
+// Email is left out on purpose: it can't be changed.
 export interface ProfileUpdate {
   firstName: string;
   lastName: string;
@@ -18,7 +16,7 @@ export interface ProfileUpdate {
 export const formatAddress = (a: Address) =>
   `${a.street.trim()}, ${a.city.trim()}, ${a.state.trim().toUpperCase()} ${a.zip.trim()}`;
 
-// Splits that text back into fields. Anything in another format goes into the street field.
+// Anything not in that format goes into the street field.
 export function parseAddress(text?: string | null): Address | null {
   if (!text?.trim()) return null;
   const m = text.match(/^(.*),\s*(.*),\s*([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)$/);
@@ -32,10 +30,8 @@ function expiryToDate(expiry: string) {
   return `${2000 + yy}-${String(mm).padStart(2, "0")}-${lastDay}`;
 }
 
-// "2028-12-31" -> "12/28"
 const dateToExpiry = (date: string) => (/^\d{4}-\d{2}/.test(date) ? `${date.slice(5, 7)}/${date.slice(2, 4)}` : date);
 
-// Matches RegistrationCardRequest in backend/src/schemas/Registration_schema.py.
 export const toCardBody = (c: CardInput) => ({
   cardholder_name: c.cardholderName.trim(),
   card_number: c.number.replace(/\D/g, ""),
@@ -53,7 +49,6 @@ function toSavedCard(raw: any): SavedCard {
   };
 }
 
-// Convert what GET /user/me sends (ProfileSchema in the backend) into the shape the UI expects.
 function toProfile(raw: any): Profile {
   return {
     firstName: raw.first_name ?? "",
@@ -62,7 +57,6 @@ function toProfile(raw: any): Profile {
     phone: raw.phone ?? "",
     receivePromotions: Boolean(raw.receive_promotion),
     address: parseAddress(raw.mailing_address),
-    // BACKEND-TODO: ProfileSchema doesn't include saved cards yet.
     cards: Array.isArray(raw.cards) ? raw.cards.map(toSavedCard) : [],
   };
 }
@@ -72,7 +66,6 @@ export async function getProfile(): Promise<Profile> {
   return toProfile(await request("/user/me"));
 }
 
-// Matches ProfileUpdateRequest in backend/src/schemas/Profile_schema.py. The backend emails the user about the change.
 export async function updateProfile(data: ProfileUpdate): Promise<Profile> {
   if (USE_MOCK_AUTH) return mock.updateProfile(data);
   await request("/user/me", {
@@ -90,17 +83,14 @@ export async function updateProfile(data: ProfileUpdate): Promise<Profile> {
 
 export async function addCard(card: CardInput): Promise<SavedCard> {
   if (USE_MOCK_AUTH) return mock.addCard(card);
-  // BACKEND-TODO: no route yet for adding a card from the profile. Assumes POST /user/cards, which should refuse a 4th card.
   return toSavedCard(await request("/user/cards", { method: "POST", body: toCardBody(card) }));
 }
 
 export async function removeCard(id: number): Promise<void> {
   if (USE_MOCK_AUTH) return mock.removeCard(id);
-  // BACKEND-TODO: no route yet for removing a card. Assumes DELETE /user/cards/{id}.
   await request(`/user/cards/${id}`, { method: "DELETE" });
 }
 
-// Matches ChangePasswordRequest in Profile_schema.py. A wrong current password comes back as a 400.
 export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
   if (USE_MOCK_AUTH) return mock.changePassword(currentPassword, newPassword);
   await request("/user/change-password", {
@@ -109,15 +99,14 @@ export async function changePassword(currentPassword: string, newPassword: strin
   });
 }
 
-// Favorites are passed around as movie ids. Pages load the movie details themselves with getMovie().
-// The backend has no separate list route: the list comes with the profile (favorite_movies).
+// There's no list route: favorites come with the profile. Only the ids are kept; pages load details with getMovie().
 export async function getFavoriteIds(): Promise<number[]> {
   if (USE_MOCK_AUTH) return mock.getFavoriteIds();
   const raw = await request<any>("/user/me");
   return (raw.favorite_movies ?? []).map((m: any) => m.movie_id);
 }
 
-// Matches FavoriteMovieRequest in Profile_schema.py: the movie id goes in the body, for both add and remove.
+// The movie id goes in the body, for DELETE too.
 export async function addFavorite(movieId: number): Promise<void> {
   if (USE_MOCK_AUTH) return mock.addFavorite(movieId);
   await request("/user/favorite-movie", { method: "POST", body: { movie_id: movieId } });

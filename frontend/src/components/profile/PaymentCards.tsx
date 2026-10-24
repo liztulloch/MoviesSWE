@@ -13,8 +13,6 @@ interface Props {
   onChange: (cards: SavedCard[]) => void;
 }
 
-// Saved cards plus a form to add one. Only the brand and last 4 digits are ever shown.
-// The add button goes away at MAX_CARDS. The backend has to enforce the limit as well.
 export default function PaymentCards({ cards, homeAddress, onChange }: Props) {
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState<CardInput>(emptyCard());

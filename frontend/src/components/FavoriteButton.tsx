@@ -8,9 +8,7 @@ interface Props {
   className?: string;
 }
 
-// Heart button that adds a movie to, or removes it from, the customer's favorites.
-// The tooltip comes from data-tip (see .fav-btn::after in styles.css).
-// Logged-out visitors are sent to log in first. Admins don't have favorites, so they don't see it.
+// The tooltip is drawn from data-tip by .fav-btn::after in styles.css.
 export default function FavoriteButton({ movie, className }: Props) {
   const { user } = useAuth();
   const { isFavorite, toggle } = useFavorites();

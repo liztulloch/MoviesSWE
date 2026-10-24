@@ -1,17 +1,15 @@
 import type { ReactNode } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
-import { LOGGED_OUT, useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import type { Role } from "../types";
 
-// Wraps pages that need a login. Logged-out visitors go to the login page and come back here after.
-// With a role, users with a different role see a "no access" message instead of the page.
-// This only controls what the screen shows. The backend must also refuse these requests.
+// This only controls what the screen shows; the backend has to refuse these requests too.
 export default function RequireAuth({ role, children }: { role?: Role; children: ReactNode }) {
-  const { user, justLoggedOut } = useAuth();
+  const { user, logoutNotice } = useAuth();
   const location = useLocation();
 
-  // Right after logging out, go where the navbar sends people, not back here after the next login.
-  if (!user && justLoggedOut) return <Navigate to={LOGGED_OUT.to} replace state={LOGGED_OUT.state} />;
+  // Right after a logout, show why on the login page instead of coming back here after the next login.
+  if (!user && logoutNotice) return <Navigate to="/login" replace state={{ message: logoutNotice }} />;
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
 
   if (role && user.role !== role) {

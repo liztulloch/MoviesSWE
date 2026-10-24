@@ -6,8 +6,6 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
   hint?: ReactNode;
 }
 
-// One labeled input. Required fields get a red *, and the error (or hint) shows under the input.
-// aria-describedby links the message to the input so screen readers read it too.
 export default function FormField({ label, error, hint, required, id, className, ...input }: Props) {
   const autoId = useId();
   const inputId = id ?? autoId;
@@ -36,7 +34,6 @@ export default function FormField({ label, error, hint, required, id, className,
   );
 }
 
-// Goes at the top of every form.
 export function RequiredNote() {
   return (
     <p className="form-note">

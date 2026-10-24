@@ -14,7 +14,6 @@ import AdminHomePage from "./pages/AdminHomePage";
 import AdminSectionPage from "./pages/AdminSectionPage";
 
 // Sets up the pages and which URL shows each one. The Navbar shows on every page.
-// Pages wrapped in RequireAuth need a login, and the role says who may see them.
 export default function App() {
   return (
     <>

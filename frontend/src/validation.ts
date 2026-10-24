@@ -1,7 +1,6 @@
 import type { Address, CardInput } from "./types";
 
-// Form checks shared by every page. Each returns an error message, or "" when the value is fine.
-// These give quick feedback while typing. The backend still has to check everything again.
+// Each check returns an error message, or "" when the value is fine.
 
 export const required = (value: string, label: string) => (value.trim() ? "" : `${label} is required.`);
 
@@ -16,7 +15,6 @@ export function phoneError(value: string) {
   return digits.length >= 10 && digits.length <= 15 ? "" : "Enter a phone number with area code, like 706-555-0123.";
 }
 
-// Shown as a live checklist under new password fields.
 export const PASSWORD_RULES = [
   { label: "At least 8 characters", test: (p: string) => p.length >= 8 },
   { label: "A letter", test: (p: string) => /[a-z]/i.test(p) },
@@ -98,10 +96,9 @@ export function cardErrors(c: CardInput, now = new Date()): CardErrors {
   return errors;
 }
 
-// True when any value in an errors object is set.
 export const hasErrors = (errors: object) => Object.values(errors).some(Boolean);
 
-// Formatters used while typing: "4111111111111111" -> "4111 1111 1111 1111", "1228" -> "12/28".
+// While typing: "4111111111111111" -> "4111 1111 1111 1111", "1228" -> "12/28".
 export const formatCardNumber = (v: string) => v.replace(/\D/g, "").slice(0, 19).replace(/(\d{4})(?=\d)/g, "$1 ");
 export function formatExpiry(v: string) {
   const d = v.replace(/\D/g, "").slice(0, 4);

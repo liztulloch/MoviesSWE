@@ -9,12 +9,11 @@ import type { SessionUser } from "../types";
 
 // What other pages can pass here through navigate("/login", { state }).
 interface LoginState {
-  message?: string; // e.g. "You've been logged out."
-  from?: { pathname: string; search?: string }; // the page to go back to after logging in
+  message?: string;
+  from?: { pathname: string; search?: string };
   email?: string;
 }
 
-// Login page. Admins go to the admin portal. Customers go back to where they were, or home.
 export default function LoginPage() {
   const { user, login } = useAuth();
   const navigate = useNavigate();

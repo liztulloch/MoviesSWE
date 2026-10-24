@@ -11,7 +11,6 @@ interface Props {
   billing?: boolean; // tells the browser's autofill this is a billing address
 }
 
-// Street, city, state and ZIP inputs. Used for the home address and for card billing addresses.
 export default function AddressFields({ value, onChange, errors = {}, required, billing }: Props) {
   const set = (key: keyof Address) => (e: ChangeEvent<HTMLInputElement>) => onChange({ ...value, [key]: e.target.value });
   const auto = (name: string) => (billing ? `billing ${name}` : name);

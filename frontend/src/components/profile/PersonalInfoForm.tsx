@@ -10,8 +10,6 @@ import { EMPTY_ADDRESS, type Address, type Profile } from "../../types";
 
 type Field = "firstName" | "lastName" | "phone";
 
-// Name, phone, promotions and the one home address, saved together.
-// Email is shown but locked, because it identifies the account.
 export default function PersonalInfoForm({ profile, onSaved }: { profile: Profile; onSaved: (p: Profile) => void }) {
   const { updateUser } = useAuth();
   const [form, setForm] = useState<Record<Field, string>>({
@@ -52,7 +50,7 @@ export default function PersonalInfoForm({ profile, onSaved }: { profile: Profil
       });
       onSaved(saved);
       updateUser({ firstName: saved.firstName, lastName: saved.lastName });
-      // The change notification email is sent by the backend, so the mock can't promise one.
+      // The notification email comes from the backend, so the mock can't promise one.
       setNotice({
         kind: "success",
         text: USE_MOCK_AUTH

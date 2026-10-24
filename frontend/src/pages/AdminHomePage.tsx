@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { ADMIN_MENU } from "../adminMenu";
 import { useAuth } from "../context/AuthContext";
 
-// Admin portal home. Admins land here after logging in.
 export default function AdminHomePage() {
   const { user } = useAuth();
   return (

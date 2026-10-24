@@ -3,7 +3,7 @@ import { showDatesFor } from "../showtimes";
 import type { Movie } from "../types";
 import FavoriteButton from "./FavoriteButton";
 
-// One movie on the home page. poster and title (links to details), a favorite heart, plus quick showtime buttons.
+// One movie on the home page. poster and title (links to details) plus quick showtime buttons.
 export default function MovieCard({ movie }: { movie: Movie }) {
   const meta = [movie.rating, movie.genre].filter(Boolean).join(" · ");
   const next = showDatesFor(movie)[0];
@@ -23,7 +23,6 @@ export default function MovieCard({ movie }: { movie: Movie }) {
           <p className="meta">{meta}</p>
         </div>
       </Link>
-      {/* Also outside the link, and placed over the poster's corner with CSS. */}
       <FavoriteButton movie={movie} className="fav-overlay" />
 
       {next && (

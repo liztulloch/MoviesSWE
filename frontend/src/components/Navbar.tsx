@@ -1,15 +1,14 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { LOGGED_OUT, useAuth } from "../context/AuthContext";
+import { LOGGED_OUT_MESSAGE, useAuth } from "../context/AuthContext";
 
-// Top bar with the site name and account links. Clicking the name goes back to the home page.
-// Logged out: Log in and Sign up. Logged in: a link to the profile or admin portal, plus Log out.
+// Top bar with the site name. Clicking it goes back to the home page.
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   async function handleLogout() {
     await logout();
-    navigate(LOGGED_OUT.to, { replace: true, state: LOGGED_OUT.state });
+    navigate("/login", { replace: true, state: { message: LOGGED_OUT_MESSAGE } });
   }
 
   return (

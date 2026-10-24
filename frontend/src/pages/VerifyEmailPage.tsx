@@ -6,8 +6,7 @@ import Alert, { MockCodeNotice, type Notice } from "../components/Alert";
 import FormField, { RequiredNote } from "../components/FormField";
 import { codeError, emailError, hasErrors } from "../validation";
 
-// Shown right after sign up. Entering the 4-digit emailed code turns the account from Inactive to Active.
-// The email comes from the URL (?email=...), so this page also works from a link or after a refresh.
+// The email comes from the URL (?email=...) so the page still works after a refresh.
 export default function VerifyEmailPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();

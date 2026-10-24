@@ -3,8 +3,7 @@ import { addFavorite, getFavoriteIds, removeFavorite } from "../api/profile";
 import { messageOf } from "../api/client";
 import { useAuth } from "./AuthContext";
 
-// Keeps the logged-in customer's favorite movie ids, so every heart on the screen stays in sync.
-// Also shows a short message at the bottom of the screen, like "Added Oppenheimer to your favorites."
+// Shared so every heart on the screen stays in sync. Also renders the "Added to favorites" message.
 
 interface FavoritesValue {
   ids: Set<number>;
@@ -27,7 +26,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<Toast | null>(null);
   const customerId = user?.role === "customer" ? user.id : null;
 
-  // Load favorites whenever a different customer logs in. Logged out or admin means none.
+  // Admins and logged-out visitors have no favorites.
   useEffect(() => {
     setIds(new Set());
     if (customerId === null) return;
@@ -40,7 +39,6 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     return () => { cancelled = true; };
   }, [customerId]);
 
-  // Hide the message after a few seconds.
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(null), 3500);

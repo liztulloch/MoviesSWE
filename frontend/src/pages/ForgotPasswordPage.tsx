@@ -6,8 +6,6 @@ import Alert from "../components/Alert";
 import FormField, { RequiredNote } from "../components/FormField";
 import { emailError } from "../validation";
 
-// Step 1 of resetting a password: the user enters their email and we send them a reset code.
-// Step 2 is ResetPasswordPage.
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");

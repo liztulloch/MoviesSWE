@@ -1,4 +1,4 @@
-// The admin portal menu. Sprint 2 only needs the menu itself, so each option opens a placeholder page.
+// Sprint 2 only needs the menu; each option opens a placeholder page.
 export const ADMIN_MENU = [
   { path: "movies", title: "Manage Movies", text: "Add new movies and edit the details of existing ones." },
   { path: "promotions", title: "Promotions", text: "Create promo codes and email them to subscribed customers." },

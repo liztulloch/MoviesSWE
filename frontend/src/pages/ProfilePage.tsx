@@ -7,8 +7,7 @@ import PaymentCards from "../components/profile/PaymentCards";
 import PersonalInfoForm from "../components/profile/PersonalInfoForm";
 import type { Profile } from "../types";
 
-// Edit profile page for customers: personal info and address, payment cards, password, and favorites.
-// The data is loaded from the backend once, then each section saves on its own.
+// Loaded once; each section then saves on its own.
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
