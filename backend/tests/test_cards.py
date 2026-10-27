@@ -1,6 +1,7 @@
 """Card validation, API ownership, masking, limits, and transaction checks."""
 import os
 import secrets
+import smtplib
 import unittest
 from datetime import date
 from unittest.mock import patch
@@ -23,8 +24,9 @@ with patch.dict(os.environ, {
     from src.Models.Customer_Models import Customer, CreditCard
     from src.Models.Movie_Models import Movie, FavoriteMovie
     from src.Models.Session_Model import UserSession
-    from src.schemas.Card_schema import CardRequest
-    from src.Services.card_service import add_customer_card
+    from src.schemas.Card_schema import CardRequest, CardUpdateRequest
+    from src.Services.card_service import add_customer_card, update_customer_card
+    from src.Services import card_service
     from src.Services.security_service import hash_password, decrypt_card_number
 
 
@@ -60,6 +62,9 @@ class CardValidationTests(unittest.TestCase):
 
 class CardApiTests(unittest.TestCase):
     def setUp(self):
+        mail_patch = patch.object(card_service, "send_generic_email")
+        self.mail = mail_patch.start()
+        self.addCleanup(mail_patch.stop)
         self.engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
 
         @event.listens_for(self.engine, "connect")
@@ -108,7 +113,7 @@ class CardApiTests(unittest.TestCase):
         self.assertEqual(saved["last4"], "1111")
         self.assertNotIn("card_number", saved)
         profile = self.client.get("/user/me", headers=self.headers[0]).json()
-        self.assertEqual(profile["cards"], [saved])
+        self.assertEqual(profile["cards"], [{key: value for key, value in saved.items() if key not in ("message", "notification_sent")}])
         with Session(self.engine) as db:
             stored = db.get(CreditCard, saved["card_id"])
             self.assertNotEqual(stored.card_number, card_body()["card_number"])
@@ -161,6 +166,146 @@ class CardApiTests(unittest.TestCase):
                     add_customer_card(db, 1, CardRequest(**card_body()))
         with Session(self.engine) as db:
             self.assertEqual(db.scalars(select(CreditCard)).all(), [])
+        self.mail.assert_not_called()
+
+    def test_add_and_remove_notify_owner_after_commit(self):
+        def verify_saved_before_email(subject, content, email):
+            self.assertEqual((subject, content, email), (
+                "Your Cinema account was updated", "Your account was updated.", "card1@example.com",
+            ))
+            with Session(self.engine) as db:
+                self.assertEqual(len(db.scalars(select(CreditCard)).all()), 1)
+
+        self.mail.side_effect = verify_saved_before_email
+        added = self.add()
+        self.assertEqual(added.status_code, 201)
+        self.assertTrue(added.json()["notification_sent"])
+        self.mail.assert_called_once()
+
+        def verify_removed_before_email(subject, content, email):
+            self.assertEqual((subject, content, email), (
+                "Your Cinema account was updated", "Your account was updated.", "card1@example.com",
+            ))
+            with Session(self.engine) as db:
+                self.assertEqual(db.scalars(select(CreditCard)).all(), [])
+
+        self.mail.side_effect = verify_removed_before_email
+        removed = self.client.delete(f"/user/cards/{added.json()['card_id']}", headers=self.headers[0])
+        self.assertEqual(removed.status_code, 200)
+        self.assertTrue(removed.json()["notification_sent"])
+        self.assertEqual(self.mail.call_count, 2)
+
+    def test_email_failure_preserves_added_card_and_response(self):
+        self.mail.side_effect = smtplib.SMTPException("test mail failure")
+        added = self.add()
+        self.assertEqual(added.status_code, 201)
+        self.assertFalse(added.json()["notification_sent"])
+        self.assertEqual(added.json()["last4"], "1111")
+        profile = self.client.get("/user/me", headers=self.headers[0]).json()
+        self.assertEqual(profile["cards"][0]["card_id"], added.json()["card_id"])
+
+    def test_email_failure_preserves_card_removal(self):
+        card_id = self.add().json()["card_id"]
+        self.mail.side_effect = OSError("test mail failure")
+        removed = self.client.delete(f"/user/cards/{card_id}", headers=self.headers[0])
+        self.assertEqual(removed.status_code, 200)
+        self.assertFalse(removed.json()["notification_sent"])
+        self.assertEqual(self.client.get("/user/me", headers=self.headers[0]).json()["cards"], [])
+
+    def test_rejected_card_changes_do_not_notify(self):
+        self.assertEqual(self.add({**card_body(), "card_number": "4111111111111112"}).status_code, 422)
+        self.assertEqual(self.client.delete("/user/cards/9999", headers=self.headers[0]).status_code, 404)
+        self.mail.assert_not_called()
+        card_id = self.add().json()["card_id"]
+        self.add(); self.add()
+        self.mail.reset_mock()
+        self.assertEqual(self.add().status_code, 409)
+        self.assertEqual(self.client.delete(f"/user/cards/{card_id}", headers=self.headers[1]).status_code, 404)
+        self.mail.assert_not_called()
+
+
+
+    def test_update_keeps_number_and_notifies_after_commit(self):
+        card_id = self.add().json()["card_id"]
+        self.mail.reset_mock()
+        with Session(self.engine) as db:
+            original = db.get(CreditCard, card_id).card_number
+        body = {key: value for key, value in card_body().items() if key != "card_number"}
+        body.update(cardholder_name="Updated Owner", billing_address="2 Updated St")
+
+        def verify_committed(subject, content, email):
+            self.assertEqual((subject, content, email), (
+                "Your Cinema account was updated", "Your account was updated.", "card1@example.com",
+            ))
+            with Session(self.engine) as db:
+                self.assertEqual(db.get(CreditCard, card_id).billing_address, "2 Updated St")
+        self.mail.side_effect = verify_committed
+        response = self.client.put(f"/user/cards/{card_id}", json=body, headers=self.headers[0])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["card_id"], card_id)
+        self.assertTrue(response.json()["notification_sent"])
+        self.assertNotIn("card_number", response.json())
+        self.mail.assert_called_once()
+        with Session(self.engine) as db:
+            self.assertEqual(db.get(CreditCard, card_id).card_number, original)
+        profile = self.client.get("/user/me", headers=self.headers[0]).json()
+        self.assertEqual(profile["cards"][0]["cardholder_name"], "Updated Owner")
+
+    def test_update_replaces_and_encrypts_number_at_three_card_limit(self):
+        cards = [self.add().json() for _ in range(3)]
+        body = {**card_body(), "card_number": "5555555555554444"}
+        response = self.client.put(f"/user/cards/{cards[0]['card_id']}", json=body, headers=self.headers[0])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["last4"], "4444")
+        self.assertEqual(response.json()["brand"], "Mastercard")
+        with Session(self.engine) as db:
+            card = db.get(CreditCard, cards[0]["card_id"])
+            self.assertEqual(decrypt_card_number(card.card_number), "5555555555554444")
+            self.assertNotEqual(card.card_number, "5555555555554444")
+            self.assertEqual(len(db.scalars(select(CreditCard)).all()), 3)
+
+    def test_update_checks_authentication_ownership_status_and_missing_card(self):
+        card_id = self.add().json()["card_id"]
+        self.mail.reset_mock()
+        path = f"/user/cards/{card_id}"
+        self.assertEqual(self.client.put(path, json=card_body()).status_code, 401)
+        self.assertEqual(self.client.put(path, json=card_body(), headers=self.headers[1]).status_code, 404)
+        self.assertEqual(self.client.put("/user/cards/99999", json=card_body(), headers=self.headers[0]).status_code, 404)
+        with Session(self.engine) as db:
+            db.get(Customer, 1).status = "Suspended"
+            db.commit()
+        self.assertEqual(self.client.put(path, json=card_body(), headers=self.headers[0]).status_code, 403)
+        self.mail.assert_not_called()
+
+    def test_invalid_update_rejected_without_changes_or_email(self):
+        card_id = self.add().json()["card_id"]
+        self.mail.reset_mock()
+        for invalid in ({"card_number": "4111111111111112"}, {"expiration_date": "2020-01-01"}, {"billing_address": "   "}):
+            response = self.client.put(f"/user/cards/{card_id}", json={**card_body(), **invalid}, headers=self.headers[0])
+            self.assertEqual(response.status_code, 422)
+        self.mail.assert_not_called()
+        with Session(self.engine) as db:
+            self.assertEqual(db.get(CreditCard, card_id).billing_address, "1 Test St")
+
+    def test_update_email_failure_preserves_change(self):
+        card_id = self.add().json()["card_id"]
+        self.mail.side_effect = smtplib.SMTPException("test failure")
+        response = self.client.put(f"/user/cards/{card_id}", json={**card_body(), "billing_address": "Changed address"}, headers=self.headers[0])
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["notification_sent"])
+        with Session(self.engine) as db:
+            self.assertEqual(db.get(CreditCard, card_id).billing_address, "Changed address")
+
+    def test_failed_update_commit_rolls_back_and_does_not_notify(self):
+        card_id = self.add().json()["card_id"]
+        self.mail.reset_mock()
+        with Session(self.engine) as db:
+            with patch.object(db, "commit", side_effect=SQLAlchemyError("test failure")):
+                with self.assertRaises(SQLAlchemyError):
+                    update_customer_card(db, 1, card_id, CardUpdateRequest(**{**card_body(), "billing_address": "Unsaved"}))
+        with Session(self.engine) as db:
+            self.assertEqual(db.get(CreditCard, card_id).billing_address, "1 Test St")
+        self.mail.assert_not_called()
 
 
 if __name__ == "__main__":

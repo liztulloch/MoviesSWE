@@ -21,7 +21,9 @@ class CardRequest(BaseModel):
 
     @field_validator("card_number")
     @classmethod
-    def validate_card_number(cls, value: SecretStr) -> SecretStr:
+    def validate_card_number(cls, value: SecretStr | None) -> SecretStr | None:
+        if value is None:
+            return None
         number = value.get_secret_value()
         if any(character not in "0123456789" for character in number):
             raise ValueError("Card number must contain only digits.")
@@ -47,6 +49,11 @@ class CardRequest(BaseModel):
         if (value.year, value.month) < (today.year, today.month):
             raise ValueError("This card has expired.")
         return value
+
+
+class CardUpdateRequest(CardRequest):
+    # Omit the number to keep the existing encrypted number.
+    card_number: SecretStr | None = Field(default=None, min_length=13, max_length=19)
 
 
 class SavedCardSchema(BaseModel):
@@ -78,3 +85,13 @@ class SavedCardSchema(BaseModel):
             billing_address=card.billing_address,
             expiration_date=card.expiration_date,
         )
+
+
+class CardAddedResponse(SavedCardSchema):
+    message: str
+    notification_sent: bool
+
+
+class CardUpdatedResponse(SavedCardSchema):
+    message: str
+    notification_sent: bool

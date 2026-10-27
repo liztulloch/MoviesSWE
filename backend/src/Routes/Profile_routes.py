@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 
 from ..Database import get_db
 from ..Models.User_Model import User
-from ..schemas.Card_schema import CardRequest, SavedCardSchema
-from ..Services.card_service import add_customer_card, remove_customer_card
+from ..schemas.Card_schema import CardRequest, CardAddedResponse, CardUpdateRequest, CardUpdatedResponse
+from ..Services.card_service import add_customer_card, remove_customer_card, update_customer_card
 from ..schemas.Profile_schema import (
     ProfileUpdateRequest,
     ProfileSchema,
@@ -37,7 +37,7 @@ router = APIRouter(
 )
 
 
-@router.post("/cards", status_code=201, response_model=SavedCardSchema)
+@router.post("/cards", status_code=201, response_model=CardAddedResponse)
 def add_card(
     data: CardRequest,
     user_id: int = Depends(get_authenticated_user_id),
@@ -45,6 +45,19 @@ def add_card(
 ):
     try:
         return add_customer_card(db, user_id, data)
+    except ProfileError as error:
+        raise HTTPException(status_code=error.status_code, detail=error.message) from error
+
+
+@router.put("/cards/{card_id}", response_model=CardUpdatedResponse)
+def update_card(
+    card_id: int,
+    data: CardUpdateRequest,
+    user_id: int = Depends(get_authenticated_user_id),
+    db: Session = Depends(get_db),
+):
+    try:
+        return update_customer_card(db, user_id, card_id, data)
     except ProfileError as error:
         raise HTTPException(status_code=error.status_code, detail=error.message) from error
 

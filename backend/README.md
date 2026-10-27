@@ -61,6 +61,10 @@ and an active customer account.
 - `POST /user/cards` accepts `cardholder_name`, `card_number`,
   `billing_address`, and `expiration_date` (`YYYY-MM-DD`). It returns the saved
   card with status 201, or 409 when the customer already has three cards.
+- `PUT /user/cards/{card_id}` updates an owned card and returns status 200.
+  Send `cardholder_name`, `billing_address`, and `expiration_date`. Include
+  `card_number` only when replacing it; omitting it (or sending null) keeps
+  the existing encrypted number. Updated numbers receive the same validation.
 - `DELETE /user/cards/{card_id}` removes an owned card and returns status 200.
   A missing card or another customer's card returns 404.
 - `GET /user/me` now includes a `cards` list. Each item contains `card_id`,
@@ -71,6 +75,13 @@ Registration and card additions share validation: 13–19 ASCII digits, a valid
 Luhn checksum, and an expiration month that has not passed. Cards are valid
 through the end of the expiration month. Invalid input returns 422.
 Card numbers remain encrypted in the database. No database migration is needed.
+
+Adding, updating, or removing a card sends the same account-update notification email as
+profile edits, after the database transaction commits. The add and update responses keep
+the saved-card fields and also includes `message` and `notification_sent`;
+the removal response includes `message` and `notification_sent`. If email
+delivery fails, the card change remains saved and the response reports
+`notification_sent: false` while retaining its successful HTTP status.
 
 ## Troubleshooting
 Before using login with database-backed sessions, apply
