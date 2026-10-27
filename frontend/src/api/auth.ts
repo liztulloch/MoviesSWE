@@ -1,5 +1,5 @@
 // Request fields match the backend schemas (Registration_schema.py, Auth_schemas.py, Profile_schema.py).
-import { request, USE_MOCK_AUTH } from "./client";
+import { ApiError, request, USE_MOCK_AUTH } from "./client";
 import * as mock from "./mockServer";
 import { formatAddress, toCardBody } from "./profile";
 import type { Address, CardInput, SessionUser } from "../types";
@@ -55,8 +55,17 @@ export async function resendVerification(email: string): Promise<CodeResponse> {
 
 export async function login(email: string, password: string): Promise<LoginResult> {
   if (USE_MOCK_AUTH) return mock.login(email, password);
+  let res: any;
+  try {
+    res = await request<any>("/auth/login", { method: "POST", body: { email, password } });
+  } catch (e) {
+    // Unverified accounts get a 403 that mentions verifying; show the wording from the demo instructions.
+    if (e instanceof ApiError && e.status === 403 && /verif/i.test(e.message)) {
+      throw new ApiError(403, "Account is not verified. Please check your email to verify your account.");
+    }
+    throw e;
+  }
   // role comes back as "Customer" or "Admin".
-  const res = await request<any>("/auth/login", { method: "POST", body: { email, password } });
   const token: string = res.access_token;
   const user: SessionUser = {
     id: userIdFromToken(token),

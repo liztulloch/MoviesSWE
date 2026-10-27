@@ -42,6 +42,7 @@ export const toCardBody = (c: CardInput) => ({
 function toSavedCard(raw: any): SavedCard {
   return {
     id: raw.card_id ?? raw.id,
+    cardholderName: raw.cardholder_name ?? "",
     brand: raw.brand ?? "Card",
     last4: raw.last4 ?? String(raw.card_number ?? "").slice(-4),
     expiry: dateToExpiry(raw.expiration_date ?? raw.expiry ?? ""),
@@ -84,6 +85,14 @@ export async function updateProfile(data: ProfileUpdate): Promise<Profile> {
 export async function addCard(card: CardInput): Promise<SavedCard> {
   if (USE_MOCK_AUTH) return mock.addCard(card);
   return toSavedCard(await request("/user/cards", { method: "POST", body: toCardBody(card) }));
+}
+
+// card_number is optional: leaving it out keeps the stored number.
+export async function updateCard(id: number, card: CardInput): Promise<SavedCard> {
+  if (USE_MOCK_AUTH) return mock.updateCard(id, card);
+  const { card_number, ...rest } = toCardBody(card);
+  const body = card_number ? { ...rest, card_number } : rest;
+  return toSavedCard(await request(`/user/cards/${id}`, { method: "PUT", body }));
 }
 
 export async function removeCard(id: number): Promise<void> {

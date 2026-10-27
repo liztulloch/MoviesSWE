@@ -67,7 +67,7 @@ async function seed(): Promise<MockDb> {
       { ...blank, id: 2, role: "customer", status: "Active", firstName: "Casey", lastName: "Customer",
         email: "customer@cinema.com", phone: "706-555-0101", passwordHash: await hash("Customer1234"),
         receivePromotions: true, address: sampleAddress, favorites: [1, 3],
-        cards: [{ id: 1, brand: "Visa", last4: "1111", expiry: "12/28", billingAddress: sampleAddress }] },
+        cards: [{ id: 1, cardholderName: "Casey Customer", brand: "Visa", last4: "1111", expiry: "12/28", billingAddress: sampleAddress }] },
       { ...blank, id: 3, role: "customer", status: "Suspended", firstName: "Sam", lastName: "Suspended",
         email: "suspended@cinema.com", phone: "706-555-0102", passwordHash: await hash("Suspended1234") },
     ],
@@ -125,6 +125,7 @@ function saveCard(db: MockDb, input: CardInput): SavedCard {
   const digits = input.number.replace(/\D/g, "");
   return {
     id: db.nextCardId++,
+    cardholderName: input.cardholderName.trim(),
     brand: cardBrand(digits),
     last4: digits.slice(-4),
     expiry: input.expiry,
@@ -208,7 +209,7 @@ export async function login(email: string, password: string): Promise<LoginResul
     throw new ApiError(401, "Incorrect email or password.");
   }
   if (user.status === "Inactive") {
-    throw new ApiError(403, "Please verify your email before logging in. Check your inbox for the 4-digit code.");
+    throw new ApiError(403, "Account is not verified. Please check your email to verify your account.");
   }
   if (user.status === "Suspended") {
     throw new ApiError(403, "This account has been suspended. Please contact the theater for help.");
@@ -266,6 +267,21 @@ export async function addCard(card: CardInput): Promise<SavedCard> {
   user.cards.push(saved);
   persist(db);
   return { ...saved };
+}
+
+export async function updateCard(id: number, input: CardInput): Promise<SavedCard> {
+  const { db, user } = await currentCustomer();
+  const card = user.cards.find((c) => c.id === id);
+  if (!card) throw new ApiError(404, "That card wasn't found.");
+  const digits = input.number.replace(/\D/g, "");
+  Object.assign(card, {
+    cardholderName: input.cardholderName.trim(),
+    expiry: input.expiry,
+    billingAddress: { ...input.billingAddress },
+    ...(digits && { brand: cardBrand(digits), last4: digits.slice(-4) }),
+  });
+  persist(db);
+  return { ...card, billingAddress: { ...card.billingAddress } };
 }
 
 export async function removeCard(id: number): Promise<void> {

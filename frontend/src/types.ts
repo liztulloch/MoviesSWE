@@ -77,6 +77,7 @@ export const emptyCard = (): CardInput => ({
 
 export interface SavedCard {
   id: number;
+  cardholderName: string;
   brand: string;
   last4: string;
   expiry: string;

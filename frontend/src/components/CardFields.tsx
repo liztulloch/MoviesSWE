@@ -8,9 +8,10 @@ interface Props {
   onChange: (card: CardInput) => void;
   errors?: CardErrors;
   homeAddress?: Address | null;
+  existingLast4?: string; // editing a saved card: a blank number keeps it
 }
 
-export default function CardFields({ value, onChange, errors = {}, homeAddress }: Props) {
+export default function CardFields({ value, onChange, errors = {}, homeAddress, existingLast4 }: Props) {
   const digits = value.number.replace(/\D/g, "");
   const brand = digits.length >= 2 ? cardBrand(digits) : "";
   const canCopy = homeAddress && !isAddressEmpty(homeAddress);
@@ -28,11 +29,11 @@ export default function CardFields({ value, onChange, errors = {}, homeAddress }
           error={errors.cardholderName}
         />
         <FormField
-          label="Card number"
-          required
+          label={existingLast4 ? "New card number" : "Card number"}
+          required={!existingLast4}
           autoComplete="cc-number"
           inputMode="numeric"
-          placeholder="1234 5678 9012 3456"
+          placeholder={existingLast4 ? `Leave blank to keep •••• ${existingLast4}` : "1234 5678 9012 3456"}
           value={value.number}
           onChange={(e) => onChange({ ...value, number: formatCardNumber(e.target.value) })}
           error={errors.number}

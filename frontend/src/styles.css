@@ -276,6 +276,7 @@ a.chip { text-decoration: none; display: inline-block; }
 .profile-section { scroll-margin-top: 1rem; }
 .profile-section h2 { margin: 0; }
 .saved-cards { list-style: none; display: grid; gap: .6rem; padding: 0; margin: 0; }
+.saved-cards > li { display: grid; gap: .6rem; }
 .saved-card {
   display: flex; justify-content: space-between; align-items: center; gap: 1rem;
   padding: .75rem 1rem; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-sm);

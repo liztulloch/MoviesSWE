@@ -73,12 +73,15 @@ export function cardBrand(number: string) {
   return "Card";
 }
 
-export function cardErrors(c: CardInput, now = new Date()): CardErrors {
+// numberOptional: when editing a saved card, a blank number keeps the stored one.
+export function cardErrors(c: CardInput, numberOptional = false, now = new Date()): CardErrors {
   const errors: CardErrors = {};
   if (!c.cardholderName.trim()) errors.cardholderName = "Name on card is required.";
 
   const digits = c.number.replace(/\D/g, "");
-  if (!digits) errors.number = "Card number is required.";
+  if (!digits) {
+    if (!numberOptional) errors.number = "Card number is required.";
+  }
   else if (digits.length < 13 || digits.length > 19 || !passesLuhn(digits)) errors.number = "That card number isn't valid.";
 
   const m = c.expiry.match(/^(\d{2})\/(\d{2})$/);
