@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 
 from ..Database import get_db
 from ..Models.User_Model import User
-from ..schemas.Card_schema import CardRequest, CardAddedResponse, CardUpdateRequest, CardUpdatedResponse
+from ..Schemas.Card_schema import CardRequest, CardAddedResponse, CardUpdateRequest, CardUpdatedResponse
 from ..Services.card_service import add_customer_card, remove_customer_card, update_customer_card
-from ..schemas.Profile_schema import (
+from ..Schemas.Profile_schema import (
     ProfileUpdateRequest,
     ProfileSchema,
     FavoriteMovieRequest,
@@ -28,7 +28,7 @@ from ..Services.profile_service import (
 )
 
 # To be implemented with authentication.
-from ..dependencies.auth_dependency import get_authenticated_user_id
+from ..Dependencies.auth_dependency import get_authenticated_user_id
 
 
 router = APIRouter(

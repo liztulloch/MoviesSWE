@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
-from ..dependencies.auth_dependency import get_current_session
+from ..Dependencies.auth_dependency import get_current_session
 from ..Models.Session_Model import UserSession
 
 
-from ..schemas.Auth_schemas import LoginRequest, LoginResponse
+from ..Schemas.Auth_schemas import LoginRequest, LoginResponse
 from ..Services.auth_service import AuthError, login_user
 from ..Database import get_db
 

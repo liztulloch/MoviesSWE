@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from ..Database import get_db
-from ..schemas.Registration_schema import (
+from ..Schemas.Registration_schema import (
     RegistrationRequest,
     ResendVerificationRequest,
     VerificationRequest,
