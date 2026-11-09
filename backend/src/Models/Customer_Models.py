@@ -59,6 +59,10 @@ class Customer(Base):
         back_populates="customer",
     )
     
+    booking_drafts = relationship(
+        "BookingDraft", back_populates="customer", passive_deletes="all",
+    )
+
     cards = relationship(
         "CreditCard",
         back_populates="customer",

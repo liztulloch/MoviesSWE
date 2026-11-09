@@ -81,13 +81,14 @@ class Showtime(Base):
 
     showtime_id = Column(Integer, primary_key=True, autoincrement=True)
     movie_id = Column(Integer, ForeignKey("cinema_booking.Movie.movie_id"), nullable=False)
-    # TheaterHall isn't modeled here yet — send its DDL and I'll add the
-    # class + a `hall` relationship on Showtime.
     hall_id = Column(Integer, ForeignKey("cinema_booking.TheaterHall.hall_id"), nullable=False)
     show_date = Column(Date, nullable=False)
     show_time = Column(String(10), nullable=False)
 
     movie = relationship("Movie", back_populates="showtimes")
+    hall = relationship("TheaterHall", back_populates="showtimes")
+    show_seats = relationship("ShowSeat", back_populates="showtime")
+    booking_drafts = relationship("BookingDraft", back_populates="showtime")
 
     def __repr__(self) -> str:
         return (
@@ -122,11 +123,13 @@ class FavoriteMovie(Base):
 
     customer = relationship("Customer", back_populates="favorite_movies")
     movie = relationship("Movie")
-    
+
 class TheaterHall(Base):
     __tablename__ = "TheaterHall"
     __table_args__ = {"schema": "cinema_booking"}
-    
+
     hall_id = Column(Integer, primary_key=True, autoincrement=True)
     hall_number = Column(Integer, nullable=False, unique=True)
-    
+
+    showtimes = relationship("Showtime", back_populates="hall")
+    seats = relationship("Seat", back_populates="hall")

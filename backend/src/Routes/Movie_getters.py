@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session, selectinload
 from ..Database import get_db
 from ..Models.Movie_Models import Movie, MovieRole
 from ..schemas.Movie_schema import MovieSchema
+from ..schemas.Showtime_schema import ShowtimeSchema
+from ..Services.showtime_service import ShowtimeError, get_movie_showtimes
 
 
 router = APIRouter(
@@ -143,3 +145,14 @@ def get_movie_by_id(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found")
 
     return MovieSchema.from_movie(movie)
+
+
+@router.get("/{movie_id}/showtimes", response_model=List[ShowtimeSchema])
+def read_movie_showtimes(
+    movie_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return get_movie_showtimes(db, movie_id)
+    except ShowtimeError as error:
+        raise HTTPException(status_code=error.status_code, detail=error.message) from error
