@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from ..Database import get_db
@@ -8,7 +8,7 @@ from ..schemas.Booking_schema import (
     BookingDraftUpdateRequest, CheckoutEmailRequest, CheckoutEmailResponse, CheckoutSummary,
 )
 from ..Services.booking_service import (
-    BookingError, checkout_booking_draft, confirm_checkout_email, create_booking_draft, get_booking_draft,
+    BookingError, cancel_booking_draft, checkout_booking_draft, confirm_checkout_email, create_booking_draft, get_booking_draft,
     list_customer_booking_drafts, update_booking_draft,
 )
 
@@ -73,6 +73,20 @@ def update_booking(
         return update_booking_draft(db, draft_id, booking_token, data, user_id)
     except BookingError as error:
         raise HTTPException(status_code=error.status_code, detail=error.message) from error
+
+
+@router.delete("/{draft_id}", status_code=204)
+def cancel_booking(
+    draft_id: int,
+    booking_token: str | None = Header(default=None, alias="X-Booking-Token"),
+    db: Session = Depends(get_db),
+    user_id: int | None = Depends(get_optional_booking_user_id),
+):
+    try:
+        cancel_booking_draft(db, draft_id, booking_token, customer_id=user_id)
+    except BookingError as error:
+        raise HTTPException(status_code=error.status_code, detail=error.message) from error
+    return Response(status_code=204)
 
 
 @router.post("/{draft_id}/checkout", response_model=CheckoutSummary)

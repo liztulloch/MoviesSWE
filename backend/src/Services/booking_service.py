@@ -121,6 +121,20 @@ def update_booking_draft(
         raise
 
 
+
+def cancel_booking_draft(
+    db: Session, draft_id: int, token: str | None, customer_id: int | None = None,
+) -> None:
+    try:
+        draft = require_booking_draft(db, draft_id, token, lock=True, customer_id=customer_id)
+        # The ShowSeat foreign key clears draft_id when the draft is deleted.
+        db.delete(draft)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
+
 def assign_booking_seats(db: Session, draft: BookingDraft, selected_ids: list[int]) -> None:
     # The caller commits the draft and seat assignments together.
     seat_ids = sorted(selected_ids)
