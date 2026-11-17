@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { getSavedDraft } from "../api/booking";
 import { messageOf } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import Alert from "../components/Alert";
@@ -25,8 +26,11 @@ export default function LoginPage() {
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // A guest who registers mid-checkout reaches this page from email verification, without "from", so held seats send them back to checkout.
   const destination = (u: SessionUser) =>
-    u.role === "admin" ? "/admin" : state.from ? state.from.pathname + (state.from.search ?? "") : "/";
+    u.role === "admin" ? "/admin"
+    : state.from ? state.from.pathname + (state.from.search ?? "")
+    : getSavedDraft() ? "/checkout" : "/";
 
   async function submit(e: FormEvent) {
     e.preventDefault();

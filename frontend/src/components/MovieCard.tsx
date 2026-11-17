@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
-import { showDatesFor } from "../showtimes";
+import { groupShowtimes } from "../showtimes";
 import type { Movie } from "../types";
 import FavoriteButton from "./FavoriteButton";
 
 // One movie on the home page. poster and title (links to details) plus quick showtime buttons.
 export default function MovieCard({ movie }: { movie: Movie }) {
   const meta = [movie.rating, movie.genre].filter(Boolean).join(" · ");
-  const next = showDatesFor(movie)[0];
+  const next = groupShowtimes(movie.showtimes ?? [])[0];
 
   return (
     <article className="movie-card">
@@ -34,8 +34,9 @@ export default function MovieCard({ movie }: { movie: Movie }) {
               <Link
                 key={t}
                 className="chip chip-sm"
-                to={`/booking/${movie.id}?date=${next.iso}&showtime=${encodeURIComponent(t)}`}
-                aria-label={`Book ${movie.title} on ${next.label} at ${t}`}
+                // The movie page picks this time, then shows which showroom it's in.
+                to={`/movies/${movie.id}?date=${next.iso}&time=${encodeURIComponent(t)}`}
+                aria-label={`See ${movie.title} on ${next.label} at ${t}`}
               >
                 {t}
               </Link>
