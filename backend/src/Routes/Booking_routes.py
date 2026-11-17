@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from ..Database import get_db
-from ..dependencies.auth_dependency import get_authenticated_user_id, get_current_session
-from ..schemas.Booking_schema import (
+from ..Dependencies.auth_dependency import get_authenticated_user_id, get_current_session
+from ..Schemas.Booking_schema import (
     BookingDraftRequest, BookingDraftResponse, BookingDraftCreatedResponse,
     BookingDraftUpdateRequest, CheckoutEmailRequest, CheckoutEmailResponse, CheckoutSummary,
 )
