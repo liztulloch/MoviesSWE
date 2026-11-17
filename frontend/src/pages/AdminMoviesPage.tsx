@@ -144,7 +144,7 @@ export default function AdminMoviesPage() {
         {added && (
           <Alert kind="success">
             "{added.title}" was added and now shows on the home page.{" "}
-            <Link to={`/movies/${added.id}`}>View it</Link>
+            <Link to={`/movies/${added.id}`}>View it</Link> or <Link to="/admin/showtimes">schedule showtimes</Link>
           </Alert>
         )}
         <div className="form-actions">

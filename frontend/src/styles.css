@@ -304,6 +304,14 @@ a.chip { text-decoration: none; display: inline-block; }
 .choice-group { border: 0; padding: 0; margin: 0; display: grid; gap: .5rem; min-width: 0; }
 .choice-group legend { padding: 0; margin-bottom: .4rem; font-size: .9rem; }
 .check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: .5rem; }
+.search-row { display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-start; }
+.search-row .field { flex: 1 1 240px; }
+.search-row .btn { margin-top: 1.55rem; }
+.form-section > h2 { margin: 0; }
+.hall-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+.hall-card { padding: 1rem; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.hall-card .showtimes { margin: .5rem 0; }
+.booked-list { margin: .3rem 0 0; padding-left: 1.1rem; color: var(--muted); font-size: .9rem; }
 
 @media (max-width: 560px) {
   .form-grid { grid-template-columns: 1fr; }

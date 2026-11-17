@@ -14,7 +14,7 @@ export interface ShowDay {
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
-const toIso = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+export const toIso = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 export function formatShowDate(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);

@@ -1,4 +1,4 @@
-// Movies has its own page; the others still open a placeholder until their backend routes exist.
+// Movies and showtimes have their own pages; promotions and users still open a placeholder.
 export const ADMIN_MENU = [
   { path: "movies", title: "Manage Movies", text: "Add new movies to the catalog." },
   { path: "promotions", title: "Manage Promotions", text: "Create promo codes and email them to subscribed customers." },
