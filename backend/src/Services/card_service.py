@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from ..Models.User_Model import User
 from ..Models.Customer_Models import Customer, CreditCard
-from ..schemas.Card_schema import CardRequest, CardUpdateRequest, SavedCardSchema, CardAddedResponse, CardUpdatedResponse
+from ..Schemas.Card_schema import CardRequest, CardUpdateRequest, SavedCardSchema, CardAddedResponse, CardUpdatedResponse
 from .profile_service import ProfileError
 from .security_service import encrypt_card_number
 from .email_service import send_generic_email

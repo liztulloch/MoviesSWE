@@ -8,9 +8,11 @@ constructors (`from_movie`) that accept ORM `Movie` instances. The SQLAlchemy
 ORM classes live in `src.Models.Movie_Models`.
 """
 
+from dataclasses import Field
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field 
+
 
 from ..Models.Movie_Models import Movie
 
@@ -103,4 +105,13 @@ class MovieSchema(BaseModel):
             showtimes=[f"{st.show_date} {st.show_time}" for st in movie.showtimes],
         )
 
- 
+class MovieCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=255)
+    mpaa_rating: Optional[str] = Field(None, max_length=10)
+    synopsis: Optional[str] = None
+    genre: str = Field(..., min_length=1, max_length=255)
+    status: str
+    poster: Optional[str] = None
+    trailer: Optional[str] = None
+    trailer_image: Optional[str] = None
+    reviews: Optional[str] = None

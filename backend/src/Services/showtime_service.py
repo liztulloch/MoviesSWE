@@ -2,9 +2,9 @@ from sqlalchemy import select, case
 from sqlalchemy.orm import Session
 
 from ..Models.Movie_Models import Movie, Showtime, TheaterHall
-from ..schemas.Showtime_schema import ShowtimeSchema
+from ..Schemas.Showtime_schema import ShowtimeSchema
 from ..Models.Seat_Models import Seat, ShowSeat
-from ..schemas.Seat_schema import SeatMapSchema, ShowSeatSchema
+from ..Schemas.Seat_schema import SeatMapSchema, ShowSeatSchema
 
 
 class ShowtimeError(Exception):

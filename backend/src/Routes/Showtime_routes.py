@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from ..Database import get_db
-from ..schemas.Seat_schema import SeatMapSchema
+from ..Schemas.Seat_schema import SeatMapSchema
 from ..Services.showtime_service import ShowtimeError, get_showtime_seats
 
 router = APIRouter(prefix="/showtimes", tags=["Showtimes"])

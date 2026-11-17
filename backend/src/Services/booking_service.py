@@ -9,7 +9,7 @@ from ..Models.Booking_Models import BookingDraft, TicketPrice
 from ..Models.Customer_Models import Customer
 from ..Models.Movie_Models import Showtime
 from ..Models.Seat_Models import Seat, ShowSeat
-from ..schemas.Booking_schema import (
+from ..Schemas.Booking_schema import (
     BookingDraftRequest, BookingDraftResponse, BookingDraftCreatedResponse,
     BookingDraftUpdateRequest, CheckoutSeat, CheckoutTicketLine, CheckoutSummary,
     CheckoutEmailResponse,

@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session, selectinload
 
 from ..Database import get_db
 from ..Models.Movie_Models import Movie, MovieRole
-from ..schemas.Movie_schema import MovieSchema
-from ..schemas.Showtime_schema import ShowtimeSchema
+from ..Schemas.Movie_schema import MovieSchema
+from ..Schemas.Showtime_schema import ShowtimeSchema
 from ..Services.showtime_service import ShowtimeError, get_movie_showtimes
 
 
