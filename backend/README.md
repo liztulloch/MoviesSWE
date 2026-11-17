@@ -84,11 +84,8 @@ delivery fails, the card change remains saved and the response reports
 `notification_sent: false` while retaining its successful HTTP status.
 
 ## Troubleshooting
-Before using login with database-backed sessions, apply
-`database/migrations/001_user_sessions.sql` from the repository root in MySQL
-Workbench (or your MySQL client). It adds `UserSession` without dropping existing
-tables. The full `database/Schema.sql` is a destructive fresh-setup script and
-also includes the session table.
+The full `database/Schema.sql` includes both session and booking tables.
+Running it drops and recreates the tables.
 
 Login issues a signed JWT containing a MySQL-generated integer session ID.
 Logout deletes only that session. Changing or resetting a password deletes all
@@ -111,3 +108,80 @@ temporary test secrets, and mocked email delivery, not the live MySQL database.
 - `pymysql.err.OperationalError (1045)` — check `DATABASE_URL` credentials.
 - If you want me to seed a local `sqlite` database with sample data, ask and I will add a small seed script.
  
+
+## Showtimes for a movie
+
+`GET /movies/{movie_id}/showtimes` is public and returns the database showtimes
+with `showtime_id`, `movie_id`, `hall_id`, `hall_number`, `show_date`, and
+`show_time`. Dates use `YYYY-MM-DD`; times retain the stored display format.
+Different halls showing the same movie at the same time remain separate items.
+An existing movie with no showtimes returns 200 with `[]`; a missing movie
+returns 404. No database migration is required.
+
+Run isolated tests from `backend`: `python -m unittest discover -s tests -v`.
+
+
+## Seat map for a showtime
+
+`GET /showtimes/{showtime_id}/seats` is public. It returns `showtime_id`,
+`hall_id`, `hall_number`, and a `seats` list containing `show_seat_id`,
+`seat_id`, `seat_number`, and the database `status` (for example Available
+or Booked). Seats are ordered by numeric seat number and restricted to the
+selected showing and its hall. Missing showtimes return 404; an existing
+showtime without availability records returns 200 with `seats: []`.
+
+No database migration is required: the models map the existing Seat and
+ShowSeat tables. Populate physical Seat rows for each hall and ShowSeat rows
+for each showing before expecting seats in the response. The endpoint does
+not create availability records or reserve seats.
+
+
+## Booking draft seat selection
+
+Create a draft with `POST /booking-drafts`, then send
+`PUT /booking-drafts/{draft_id}/seats` with `X-Booking-Token` set to the
+returned access token and a JSON body such as `{"show_seat_ids": [101, 102]}`.
+The seat count must equal the draft ticket count. Duplicate IDs, wrong
+showings/halls, booked seats, and seats reserved by another draft are rejected.
+A successful replacement releases the draft's previous seats; a rejected
+replacement rolls back and preserves the original selection.
+
+Draft responses include `selected_show_seat_ids`. Public seat-map responses
+show draft-held seats as `Reserved` without exposing draft IDs or tokens.
+Automatic expiry and checkout are not implemented yet.
+
+The draft tables are in `database/Schema.sql`. Running it drops and recreates tables.
+
+
+## Create a draft and select seats together
+
+`POST /booking-drafts` now requires `show_seat_ids` alongside `showtime_id`,
+`adult`, `child`, and `senior`. Example:
+
+```json
+{"showtime_id":12,"adult":2,"child":1,"senior":0,"show_seat_ids":[101,102,103]}
+```
+
+The frontend keeps ticket and seat choices locally until submitting this
+request. Creating the draft and reserving all seats commit together; a failure
+rolls back both. The response includes the draft access token and selected IDs.
+`PUT /booking-drafts/{draft_id}/seats` remains available for later changes.
+This supersedes the earlier two-request creation flow. Tests remain deferred.
+
+
+## Update tickets and seats together (current API)
+
+`PUT /booking-drafts/{draft_id}` replaces ticket quantities and selected seats
+in one transaction. Send `X-Booking-Token` and a complete selection:
+
+```json
+{"adult":1,"child":1,"senior":0,"show_seat_ids":[104,105]}
+```
+
+The draft keeps its existing showtime, ID, and access token. A failed update
+rolls back both the ticket changes and seat changes. A successful update
+releases seats no longer selected. This replaces the earlier
+`PUT /booking-drafts/{draft_id}/seats` route, which has been removed.
+`POST /booking-drafts` creates tickets and seats together and also requires
+`showtime_id`. `GET /booking-drafts/{draft_id}` still restores saved state.
+No further SQL changes are required. Tests remain deferred.

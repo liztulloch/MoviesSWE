@@ -3,7 +3,9 @@ CREATE SCHEMA IF NOT EXISTS `cinema_booking`;
 USE `cinema_booking`;
 
 DROP TABLE IF EXISTS `Ticket`;
+DROP TABLE IF EXISTS `TicketPrice`;
 DROP TABLE IF EXISTS `ShowSeat`;
+DROP TABLE IF EXISTS `BookingDraft`;
 DROP TABLE IF EXISTS `FavoriteMovie`;
 DROP TABLE IF EXISTS `Recommendation`;
 DROP TABLE IF EXISTS `CreditCard`;
@@ -89,27 +91,6 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`Seat` (
         ON UPDATE NO ACTION
 ) ENGINE = InnoDB;
 
-CREATE TABLE IF NOT EXISTS `cinema_booking`.`ShowSeat` (
-    `show_seat_id` INT NOT NULL AUTO_INCREMENT,
-    `status` VARCHAR(20) NOT NULL,
-    `seat_id` INT NOT NULL,
-    `showtime_id` INT NOT NULL,
-    PRIMARY KEY (`show_seat_id`),
-    INDEX `fk_seat_seat1_idx` (`seat_id`),
-    INDEX `fk_showseat_showtime1_idx` (`showtime_id`),
-    UNIQUE (`showtime_id`, `seat_id`),
-    CONSTRAINT `fk_seat_seat1`
-        FOREIGN KEY (`seat_id`)
-        REFERENCES `cinema_booking`.`Seat` (`seat_id`)
-        ON DELETE NO ACTION
-        ON UPDATE NO ACTION,
-    CONSTRAINT `fk_showseat_showtime1`
-        FOREIGN KEY (`showtime_id`)
-        REFERENCES `cinema_booking`.`Showtime` (`showtime_id`)
-        ON DELETE NO ACTION
-        ON UPDATE NO ACTION
-) ENGINE = InnoDB;
-
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`User` (
     `user_id` INT NOT NULL AUTO_INCREMENT,
     `first_name` VARCHAR(500) NOT NULL,
@@ -152,6 +133,55 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`Customer` (
         ON UPDATE NO ACTION
 ) ENGINE = InnoDB;
 
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`BookingDraft` (
+    `draft_id` INT NOT NULL AUTO_INCREMENT,
+    `showtime_id` INT NOT NULL,
+    `customer_id` INT NULL,
+    `adult` INT NOT NULL,
+    `child` INT NOT NULL,
+    `senior` INT NOT NULL,
+    `access_token_hash` VARCHAR(64) NULL,
+    `checkout_email` VARCHAR(254) NULL,
+    PRIMARY KEY (`draft_id`),
+    UNIQUE (`access_token_hash`),
+    CONSTRAINT `ck_draft_counts` CHECK (`adult` >= 0 AND `child` >= 0 AND `senior` >= 0),
+    CONSTRAINT `ck_draft_has_tickets` CHECK (`adult` + `child` + `senior` > 0),
+    CONSTRAINT `fk_draft_customer`
+        FOREIGN KEY (`customer_id`)
+        REFERENCES `cinema_booking`.`Customer` (`customer_id`)
+        ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT `fk_draft_showtime`
+        FOREIGN KEY (`showtime_id`)
+        REFERENCES `cinema_booking`.`Showtime` (`showtime_id`)
+        ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`ShowSeat` (
+    `show_seat_id` INT NOT NULL AUTO_INCREMENT,
+    `draft_id` INT NULL,
+    `status` VARCHAR(20) NOT NULL,
+    `seat_id` INT NOT NULL,
+    `showtime_id` INT NOT NULL,
+    PRIMARY KEY (`show_seat_id`),
+    INDEX `fk_seat_seat1_idx` (`seat_id`),
+    INDEX `fk_showseat_showtime1_idx` (`showtime_id`),
+    UNIQUE (`showtime_id`, `seat_id`),
+    CONSTRAINT `fk_showseat_draft`
+        FOREIGN KEY (`draft_id`)
+        REFERENCES `cinema_booking`.`BookingDraft` (`draft_id`)
+        ON DELETE SET NULL ON UPDATE NO ACTION,
+    CONSTRAINT `fk_seat_seat1`
+        FOREIGN KEY (`seat_id`)
+        REFERENCES `cinema_booking`.`Seat` (`seat_id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION,
+    CONSTRAINT `fk_showseat_showtime1`
+        FOREIGN KEY (`showtime_id`)
+        REFERENCES `cinema_booking`.`Showtime` (`showtime_id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`Admin` (
     `admin_id` INT NOT NULL,
     PRIMARY KEY (`admin_id`),
@@ -188,6 +218,16 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`Booking` (
 		ON DELETE SET NULL
         ON UPDATE CASCADE
 ) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `cinema_booking`.`TicketPrice` (
+    `ticket_type` ENUM('Adult', 'Child', 'Senior') NOT NULL,
+    `price` DECIMAL(7,2) NOT NULL,
+    PRIMARY KEY (`ticket_type`),
+    CONSTRAINT `ck_ticket_price_nonnegative` CHECK (`price` >= 0)
+) ENGINE = InnoDB;
+
+INSERT INTO `cinema_booking`.`TicketPrice` (`ticket_type`, `price`)
+VALUES ('Adult', 12.00), ('Child', 8.00), ('Senior', 9.00);
 
 CREATE TABLE IF NOT EXISTS `cinema_booking`.`Ticket` (
     `ticket_id` INT NOT NULL AUTO_INCREMENT,
@@ -264,145 +304,145 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`CreditCard` (
 ) ENGINE = InnoDB;
 
 
--- INSERT INTO Movie
---     (poster, title, mpaa_rating, synopsis, genre, status,
---      trailer_image, trailer, reviews)
--- VALUES
---     (
---         'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg',
---         'Interstellar',
---         'PG-13',
---         'A team of explorers travels through a wormhole in space in an attempt to ensure humanity''s survival.',
---         'Sci-Fi, Drama, Adventure',
---         'Currently Running',
---         'https://img.youtube.com/vi/zSWdZVtXT7E/maxresdefault.jpg',
---         'https://www.youtube.com/watch?v=zSWdZVtXT7E',
---         'https://www.rottentomatoes.com/m/interstellar_2014#critics-reviews'
---     ),
---     (
---         'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
---         'The Dark Knight',
---         'PG-13',
---         'Batman faces a criminal mastermind who plunges Gotham City into chaos.',
---         'Action, Crime, Drama',
---         'Currently Running',
---         'https://img.youtube.com/vi/EXeTwQWrcwY/maxresdefault.jpg',
---         'https://www.youtube.com/watch?v=EXeTwQWrcwY',
---         'https://www.rottentomatoes.com/m/the_dark_knight#critics-reviews'
---     ),
---     (
---         'https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',
---         'Oppenheimer',
---         'R',
---         'The story of J. Robert Oppenheimer and his role in the development of the atomic bomb.',
---         'Drama, History',
---         'Currently Running',
---         'https://img.youtube.com/vi/uYPbbksJxIg/maxresdefault.jpg',
---         'https://www.youtube.com/watch?v=uYPbbksJxIg',
---         'https://www.rottentomatoes.com/m/oppenheimer_2023#critics-reviews'
---     ),
---     (
---         'https://image.tmdb.org/t/p/w500/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg',
---         'The Shawshank Redemption',
---         'R',
---         'A banker sentenced to life in prison forms an unlikely friendship while maintaining hope for freedom.',
---         'Drama',
---         'Currently Running',
---         'https://img.youtube.com/vi/PLl99DlL6b4/maxresdefault.jpg',
---         'https://www.youtube.com/watch?v=PLl99DlL6b4',
---         'https://www.rottentomatoes.com/m/shawshank_redemption#critics-reviews'
---     ),
---     (
---         'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg',
---         'Dune: Part Two',
---         'PG-13',
---         'Paul Atreides unites with Chani and the Fremen while seeking revenge against those who destroyed his family.',
---         'Sci-Fi, Adventure, Drama',
---         'Currently Running',
---         'https://img.youtube.com/vi/Way9Dexny3w/maxresdefault.jpg',
---         'https://www.youtube.com/watch?v=Way9Dexny3w',
---         'https://www.rottentomatoes.com/m/dune_part_two#critics-reviews'
---     ),
---     (
---         'https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p34442_p_v10_aq.jpg',
---         'Spider-Man 2',
---         'PG-13',
---         'Peter Parker struggles to balance his personal life with his responsibilities as Spider-Man while facing Doctor Octopus.',
---         'Action, Adventure, Sci-Fi',
---         'Currently Running',
---         'https://img.youtube.com/vi/1s9Yln0YwCw/maxresdefault.jpg',
---         'https://www.youtube.com/watch?v=1s9Yln0YwCw',
---         'https://www.rottentomatoes.com/m/spiderman_2#critics-reviews'
---     ),
+INSERT INTO Movie
+    (poster, title, mpaa_rating, synopsis, genre, status,
+     trailer_image, trailer, reviews)
+VALUES
+    (
+        'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg',
+        'Interstellar',
+        'PG-13',
+        'A team of explorers travels through a wormhole in space in an attempt to ensure humanity''s survival.',
+        'Sci-Fi, Drama, Adventure',
+        'Currently Running',
+        'https://img.youtube.com/vi/zSWdZVtXT7E/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=zSWdZVtXT7E',
+        'https://www.rottentomatoes.com/m/interstellar_2014#critics-reviews'
+    ),
+    (
+        'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
+        'The Dark Knight',
+        'PG-13',
+        'Batman faces a criminal mastermind who plunges Gotham City into chaos.',
+        'Action, Crime, Drama',
+        'Currently Running',
+        'https://img.youtube.com/vi/EXeTwQWrcwY/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=EXeTwQWrcwY',
+        'https://www.rottentomatoes.com/m/the_dark_knight#critics-reviews'
+    ),
+    (
+        'https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',
+        'Oppenheimer',
+        'R',
+        'The story of J. Robert Oppenheimer and his role in the development of the atomic bomb.',
+        'Drama, History',
+        'Currently Running',
+        'https://img.youtube.com/vi/uYPbbksJxIg/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=uYPbbksJxIg',
+        'https://www.rottentomatoes.com/m/oppenheimer_2023#critics-reviews'
+    ),
+    (
+        'https://image.tmdb.org/t/p/w500/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg',
+        'The Shawshank Redemption',
+        'R',
+        'A banker sentenced to life in prison forms an unlikely friendship while maintaining hope for freedom.',
+        'Drama',
+        'Currently Running',
+        'https://img.youtube.com/vi/PLl99DlL6b4/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=PLl99DlL6b4',
+        'https://www.rottentomatoes.com/m/shawshank_redemption#critics-reviews'
+    ),
+    (
+        'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg',
+        'Dune: Part Two',
+        'PG-13',
+        'Paul Atreides unites with Chani and the Fremen while seeking revenge against those who destroyed his family.',
+        'Sci-Fi, Adventure, Drama',
+        'Currently Running',
+        'https://img.youtube.com/vi/Way9Dexny3w/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=Way9Dexny3w',
+        'https://www.rottentomatoes.com/m/dune_part_two#critics-reviews'
+    ),
+    (
+        'https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p34442_p_v10_aq.jpg',
+        'Spider-Man 2',
+        'PG-13',
+        'Peter Parker struggles to balance his personal life with his responsibilities as Spider-Man while facing Doctor Octopus.',
+        'Action, Adventure, Sci-Fi',
+        'Currently Running',
+        'https://img.youtube.com/vi/1s9Yln0YwCw/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=1s9Yln0YwCw',
+        'https://www.rottentomatoes.com/m/spiderman_2#critics-reviews'
+    ),
 
---     -- Coming Soon
+    -- Coming Soon
 
---     (
---         'https://resizing.flixster.com/L4FFhrg4cS3UwcUFr9sHyEE_nlY=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2EzMDNkYmUyLTk4NzMtNDRkMS04Mjc4LWQ3NGU1MjNjMGQzMi5qcGc=',
---         'Clayface',
---         'R',
---         'Matt Hagen''s rise from Gotham street kid to Hollywood leading man is cut short when he is horribly disfigured. A cutting-edge treatment restores his appearance but unexpectedly affects his grip on reality.',
---         'Horror, Thriller',
---         'Coming Soon',
---         'https://img.youtube.com/vi/OGO4Mqvo3jI/maxresdefault.jpg',
---         'https://www.youtube.com/watch?v=OGO4Mqvo3jI',
---         NULL
---     ),
---     (
---         'https://resizing.flixster.com/HI64aC1g5q3IEbUvYxwC7aD2k8E=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzBmZTYzOGEwLTRjMTQtNDcxYS1hMzY3LTUwOTI5OGQ1OTI0Ny5qcGc=',
---         'Street Fighter',
---         NULL,
---         'Estranged fighters Ryu and Ken Masters are thrown back into combat when Chun-Li recruits them for the World Warrior Tournament, where a deadly conspiracy awaits.',
---         'Action, Adventure',
---         'Coming Soon',
--- 		'https://img.youtube.com/vi/Xt4X4FvXk2A/maxresdefault.jpg',
--- 	    'https://www.youtube.com/watch?v=Xt4X4FvXk2A',
---         NULL
---     ),
---     (
---         'https://resizing.flixster.com/dKU6Pe1P3KPx74Z_y3aX98rn4T4=/fit-in/352x330/v2/https://resizing.flixster.com/1t7u88QXOet-KAWbng7yel34DjY=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzZlODBlNGU2LWIxN2YtNGNiMC04ZGE0LWFjZDFmNTI5YTVmNC5qcGc=',
---         'The Hunger Games: Sunrise on the Reaping',
---         NULL,
---         'Twenty-four years before the events of The Hunger Games, a young Haymitch Abernathy is selected to compete in the 50th Hunger Games, also known as the Second Quarter Quell.',
---         'Action, Adventure, Drama',
---         'Coming Soon',
---         'https://img.youtube.com/vi/fS35YSjopjE/maxresdefault.jpg',
---         'https://www.youtube.com/watch?v=fS35YSjopjE',
---         NULL
---     ),
---     (
---         'https://m.media-amazon.com/images/M/MV5BNGEwYWZkN2UtOTQ5Mi00MGQzLWEzNjYtMWMyNDBkMTkzMWNkXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg',
---         'Avengers: Doomsday',
---         NULL,
---         'Heroes from three distinct universes are set on a deadly collision course as they face an existential threat unlike anything they have encountered before.',
---         'Action, Adventure, Sci-Fi',
---         'Coming Soon',
---         'https://img.youtube.com/vi/fxNh27fRdYA/maxresdefault.jpg',
---         'https://www.youtube.com/watch?v=fxNh27fRdYA',
---         NULL
---     ),
---     (
---         'https://resizing.flixster.com/_iIt4XxdnDsIgXQ3I2U-x0Xj_70=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2VkN2QzNWJhLTcyMzgtNDlkMS05NDZkLWJiZjE4ZGViZjNhNC5qcGc=',
---         'Dune: Part Three',
---         NULL,
---         'Nearly two decades after Paul Atreides seized control of the Imperium, he must face the consequences of his reign as old allies return, new threats emerge, and betrayal lurks in every shadow.',
---         'Sci-Fi, Adventure, Drama',
---         'Coming Soon',
---         'https://img.youtube.com/vi/iEpdGDM6x48/maxresdefault.jpg',
---         'https://www.youtube.com/watch?v=iEpdGDM6x48',
---         NULL
---     ),
---     (
---         'https://resizing.flixster.com/bI1UsSOuibnXKuyDqGX6-eOpxps=/fit-in/352x330/v2/https://resizing.flixster.com/2uORLUCFbTg2oV26tr-C4oevoC0=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzFmYWEyMGNmLWJkMGUtNGNjNC1hNzIzLTc5ODc4M2JlMDEzYS5qcGc=',
---         'The Angry Birds Movie 3',
---         NULL,
---         'Red faces his greatest challenge yet as he attempts to survive fatherhood while once again saving the world.',
---         'Animation, Adventure, Comedy',
---         'Coming Soon',
---         'https://img.youtube.com/vi/n1DBDfavlQo/maxresdefault.jpg',
---         'https://www.youtube.com/watch?v=n1DBDfavlQo',
---         NULL
---     );
+    (
+        'https://resizing.flixster.com/L4FFhrg4cS3UwcUFr9sHyEE_nlY=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2EzMDNkYmUyLTk4NzMtNDRkMS04Mjc4LWQ3NGU1MjNjMGQzMi5qcGc=',
+        'Clayface',
+        'R',
+        'Matt Hagen''s rise from Gotham street kid to Hollywood leading man is cut short when he is horribly disfigured. A cutting-edge treatment restores his appearance but unexpectedly affects his grip on reality.',
+        'Horror, Thriller',
+        'Coming Soon',
+        'https://img.youtube.com/vi/OGO4Mqvo3jI/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=OGO4Mqvo3jI',
+        NULL
+    ),
+    (
+        'https://resizing.flixster.com/HI64aC1g5q3IEbUvYxwC7aD2k8E=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzBmZTYzOGEwLTRjMTQtNDcxYS1hMzY3LTUwOTI5OGQ1OTI0Ny5qcGc=',
+        'Street Fighter',
+        NULL,
+        'Estranged fighters Ryu and Ken Masters are thrown back into combat when Chun-Li recruits them for the World Warrior Tournament, where a deadly conspiracy awaits.',
+        'Action, Adventure',
+        'Coming Soon',
+		'https://img.youtube.com/vi/Xt4X4FvXk2A/maxresdefault.jpg',
+	    'https://www.youtube.com/watch?v=Xt4X4FvXk2A',
+        NULL
+    ),
+    (
+        'https://resizing.flixster.com/dKU6Pe1P3KPx74Z_y3aX98rn4T4=/fit-in/352x330/v2/https://resizing.flixster.com/1t7u88QXOet-KAWbng7yel34DjY=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzZlODBlNGU2LWIxN2YtNGNiMC04ZGE0LWFjZDFmNTI5YTVmNC5qcGc=',
+        'The Hunger Games: Sunrise on the Reaping',
+        NULL,
+        'Twenty-four years before the events of The Hunger Games, a young Haymitch Abernathy is selected to compete in the 50th Hunger Games, also known as the Second Quarter Quell.',
+        'Action, Adventure, Drama',
+        'Coming Soon',
+        'https://img.youtube.com/vi/fS35YSjopjE/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=fS35YSjopjE',
+        NULL
+    ),
+    (
+        'https://m.media-amazon.com/images/M/MV5BNGEwYWZkN2UtOTQ5Mi00MGQzLWEzNjYtMWMyNDBkMTkzMWNkXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg',
+        'Avengers: Doomsday',
+        NULL,
+        'Heroes from three distinct universes are set on a deadly collision course as they face an existential threat unlike anything they have encountered before.',
+        'Action, Adventure, Sci-Fi',
+        'Coming Soon',
+        'https://img.youtube.com/vi/fxNh27fRdYA/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=fxNh27fRdYA',
+        NULL
+    ),
+    (
+        'https://resizing.flixster.com/_iIt4XxdnDsIgXQ3I2U-x0Xj_70=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2VkN2QzNWJhLTcyMzgtNDlkMS05NDZkLWJiZjE4ZGViZjNhNC5qcGc=',
+        'Dune: Part Three',
+        NULL,
+        'Nearly two decades after Paul Atreides seized control of the Imperium, he must face the consequences of his reign as old allies return, new threats emerge, and betrayal lurks in every shadow.',
+        'Sci-Fi, Adventure, Drama',
+        'Coming Soon',
+        'https://img.youtube.com/vi/iEpdGDM6x48/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=iEpdGDM6x48',
+        NULL
+    ),
+    (
+        'https://resizing.flixster.com/bI1UsSOuibnXKuyDqGX6-eOpxps=/fit-in/352x330/v2/https://resizing.flixster.com/2uORLUCFbTg2oV26tr-C4oevoC0=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzFmYWEyMGNmLWJkMGUtNGNjNC1hNzIzLTc5ODc4M2JlMDEzYS5qcGc=',
+        'The Angry Birds Movie 3',
+        NULL,
+        'Red faces his greatest challenge yet as he attempts to survive fatherhood while once again saving the world.',
+        'Animation, Adventure, Comedy',
+        'Coming Soon',
+        'https://img.youtube.com/vi/n1DBDfavlQo/maxresdefault.jpg',
+        'https://www.youtube.com/watch?v=n1DBDfavlQo',
+        NULL
+    );
 
 
 
@@ -526,93 +566,36 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`CreditCard` (
 
 
 
--- INSERT INTO TheaterHall
---     (hall_number)
--- VALUES
---     (1),
---     (2),
---     (3);
+-- Demo halls and showtimes. Movie groups rotate through the three halls.
+INSERT INTO TheaterHall (hall_number)
+VALUES (1), (2), (3);
 
+INSERT INTO Showtime (movie_id, hall_id, show_date, show_time)
+SELECT
+    m.movie_id,
+    h.hall_id,
+    DATE_ADD(CURRENT_DATE(), INTERVAL (
+        1 + demo_day.day_offset + 3 * (m.schedule_index DIV 3)
+        + CASE WHEN m.status = 'Coming Soon'
+               THEN GREATEST(14, 3 * ((m.running_count + 2) DIV 3))
+               ELSE 0 END
+    ) DAY),
+    slot.show_time
+FROM (
+    -- Number each group separately, so coming-soon titles leave no gaps.
+    SELECT movie_id, status,
+           ROW_NUMBER() OVER (PARTITION BY status ORDER BY movie_id) - 1 AS schedule_index,
+           SUM(CASE WHEN status = 'Currently Running' THEN 1 ELSE 0 END) OVER () AS running_count
+    FROM Movie
+    WHERE status IN ('Currently Running', 'Coming Soon')
+) AS m
+JOIN TheaterHall AS h ON h.hall_number = MOD(m.schedule_index, 3) + 1
+CROSS JOIN (SELECT 0 AS day_offset UNION ALL SELECT 1 UNION ALL SELECT 2) AS demo_day
+CROSS JOIN (
+    SELECT '2:00 PM' AS show_time UNION ALL SELECT '5:00 PM' UNION ALL SELECT '8:00 PM'
+) AS slot
+ORDER BY m.movie_id, demo_day.day_offset, slot.show_time;
 
-
-
--- INSERT INTO Showtime
---     (movie_id, hall_id, show_date, show_time)
--- VALUES
-
---  
---     (1, 1, '2026-09-26', '1:00 PM'),
---     (1, 1, '2026-09-26', '5:00 PM'),
---     (1, 1, '2026-09-26', '9:00 PM'),
---     (1, 2, '2026-09-26', '2:30 PM'),
---     (1, 2, '2026-09-26', '7:00 PM'),
---     (1, 3, '2026-09-26', '6:00 PM'),
-
---   
---     (2, 1, '2026-09-26', '2:00 PM'),
---     (2, 1, '2026-09-26', '6:00 PM'),
---     (2, 1, '2026-09-26', '9:30 PM'),
---     (2, 2, '2026-09-26', '4:00 PM'),
---     (2, 2, '2026-09-26', '8:00 PM'),
---     (2, 3, '2026-09-26', '7:30 PM'),
-
---     
---     (3, 1, '2026-09-26', '12:30 PM'),
---     (3, 1, '2026-09-26', '4:30 PM'),
---     (3, 1, '2026-09-26', '8:30 PM'),
---     (3, 2, '2026-09-26', '3:30 PM'),
---     (3, 2, '2026-09-26', '7:30 PM'),
---     (3, 3, '2026-09-26', '5:30 PM'),
-
---     
---     (4, 1, '2026-09-26', '1:30 PM'),
---     (4, 1, '2026-09-26', '6:30 PM'),
---     (4, 2, '2026-09-26', '2:00 PM'),
---     (4, 2, '2026-09-26', '6:00 PM'),
---     (4, 3, '2026-09-26', '8:00 PM'),
-
---     
---     (5, 1, '2026-09-26', '12:00 PM'),
---     (5, 1, '2026-09-26', '4:00 PM'),
---     (5, 1, '2026-09-26', '8:00 PM'),
---     (5, 2, '2026-09-26', '1:00 PM'),
---     (5, 2, '2026-09-26', '5:30 PM'),
---     (5, 2, '2026-09-26', '9:30 PM'),
---     (5, 3, '2026-09-26', '6:30 PM'),
-
---     
---     (6, 1, '2026-09-26', '3:00 PM'),
---     (6, 1, '2026-09-26', '7:00 PM'),
---     (6, 1, '2026-09-26', '10:00 PM'),
---     (6, 2, '2026-09-26', '3:00 PM'),
---     (6, 2, '2026-09-26', '6:30 PM'),
---     (6, 3, '2026-09-26', '8:30 PM'),
-
---     
-
---     
---     (1, 1, '2026-09-27', '2:00 PM'),
---     (1, 2, '2026-09-27', '7:00 PM'),
-
---     
---     (2, 1, '2026-09-27', '3:00 PM'),
---     (2, 3, '2026-09-27', '8:00 PM'),
-
-
---     (3, 1, '2026-09-27', '4:00 PM'),
---     (3, 2, '2026-09-27', '8:30 PM'),
-
---     
---     (4, 1, '2026-09-27', '5:00 PM'),
-
---     
---     (5, 2, '2026-09-27', '2:30 PM'),
---     (5, 3, '2026-09-27', '7:30 PM'),
-
---     
---     (6, 1, '2026-09-27', '1:30 PM'),
---     (6, 2, '2026-09-27', '6:00 PM');
---     
 --     INSERT INTO `User`
 -- (first_name, last_name, email, phone_number, password)
 -- VALUES
@@ -663,42 +646,33 @@ CREATE TABLE IF NOT EXISTS `cinema_booking`.`CreditCard` (
 -- ('EXPIRED25', 0.25, 0),
 -- ('MOVIENIGHT', 0.05, 1);
 
--- -- =============================================
--- -- 5. SEATS
--- -- 20 physical seats per theater hall
--- -- =============================================
+-- Match the frontend seat grid: A-H, 10 seats per row.
+-- Seat numbers 1-10 are A1-A10, 11-20 are B1-B10, and so on.
+INSERT INTO Seat (seat_number, hall_id)
+SELECT r.row_index * 10 + c.column_number, h.hall_id
+FROM TheaterHall AS h
+CROSS JOIN (
+    SELECT 0 AS row_index UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+    UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+) AS r
+CROSS JOIN (
+    SELECT 1 AS column_number UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+    UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8
+    UNION ALL SELECT 9 UNION ALL SELECT 10
+) AS c
+ORDER BY h.hall_id, r.row_index, c.column_number;
 
--- INSERT INTO Seat (seat_number, hall_id)
--- SELECT n.seat_number, h.hall_id
--- FROM TheaterHall h
--- CROSS JOIN (
---     SELECT 1 AS seat_number UNION ALL
---     SELECT 2 UNION ALL SELECT 3 UNION ALL
---     SELECT 4 UNION ALL SELECT 5 UNION ALL
---     SELECT 6 UNION ALL SELECT 7 UNION ALL
---     SELECT 8 UNION ALL SELECT 9 UNION ALL
---     SELECT 10 UNION ALL SELECT 11 UNION ALL
---     SELECT 12 UNION ALL SELECT 13 UNION ALL
---     SELECT 14 UNION ALL SELECT 15 UNION ALL
---     SELECT 16 UNION ALL SELECT 17 UNION ALL
---     SELECT 18 UNION ALL SELECT 19 UNION ALL
---     SELECT 20
--- ) n;
-
--- -- =============================================
--- -- 6. SHOWSEAT
--- -- Create availability for every seat
--- -- in every showtime in its physical hall
--- -- =============================================
-
--- INSERT INTO ShowSeat
--- (status, seat_id, showtime_id)
--- SELECT
---     'Available',
---     s.seat_id,
---     sh.showtime_id
--- FROM Showtime sh
--- JOIN Seat s ON sh.hall_id = s.hall_id;
+-- Copy each hall's physical seats to its showtimes. Match the frontend's
+-- demo taken seats: A4, A5, C7, C8, D3, E5, E6, F9, G2, H10.
+INSERT INTO ShowSeat (status, seat_id, showtime_id)
+SELECT
+    CASE WHEN s.seat_number IN (4, 5, 27, 28, 33, 45, 46, 59, 62, 80)
+         THEN 'Booked' ELSE 'Available' END,
+    s.seat_id,
+    sh.showtime_id
+FROM Showtime AS sh
+JOIN Seat AS s ON s.hall_id = sh.hall_id
+ORDER BY sh.showtime_id, s.seat_number;
 
 -- -- =============================================
 -- -- 7. BOOKINGS
