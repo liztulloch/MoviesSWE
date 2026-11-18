@@ -33,12 +33,46 @@ export const GENRES = [
   "Thriller",
 ] as const;
 
-// Hardcoded for Sprint 1. Used when a movie has no showtimes in the database.
-export const SHOWTIMES = ["2:00 PM", "5:00 PM", "8:00 PM"] as const;
+export const MPAA_RATINGS = ["G", "PG", "PG-13", "R", "NC-17"] as const;
 
-// Price of one ticket for each age group.
+// Price of one ticket for each age group. The checkout summary uses the database prices.
 export const TICKET_PRICES = { adult: 12, child: 8, senior: 9 } as const;
 export type TicketType = keyof typeof TICKET_PRICES;
+export type TicketCounts = Record<TicketType, number>;
+
+// Showtimes, seats and checkout (Sprint 3)
+export interface Showtime {
+  id: number;
+  movieId: number;
+  hall: number; // the showroom number customers see
+  date: string; // YYYY-MM-DD
+  time: string; // "2:00 PM"
+}
+
+export interface ShowSeat {
+  id: number; // show_seat_id: this seat for one showing, which is what bookings reserve
+  number: number;
+  status: string; // "Available", "Booked" or "Reserved"
+}
+
+export interface TicketLine {
+  type: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+}
+
+export interface CheckoutSummary {
+  movieTitle: string;
+  date: string;
+  time: string;
+  hall: number;
+  seats: number[];
+  tickets: TicketLine[];
+  subtotal: number;
+  accountEmail: string;
+  checkoutEmail: string | null;
+}
 
 // Accounts (Sprint 2)
 export type Role = "customer" | "admin";

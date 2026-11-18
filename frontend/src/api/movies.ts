@@ -1,6 +1,7 @@
 // The only file that talks to the backend. Pages call these functions instead of using fetch().
-import type { Movie } from "../types";
+import type { Movie, ShowSeat, Showtime } from "../types";
 import { mockMovies } from "../data/mockMovies";
+import { request } from "./client";
 
 // Settings come from frontend/.env. VITE_USE_MOCK=false means use the real backend.
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
@@ -22,7 +23,7 @@ const toList = (v: unknown): string[] | undefined => {
 };
 
 // Convert what the backend sends (DB column names) into the shape the UI expects
-function toMovie(raw: any): Movie {
+export function toMovie(raw: any): Movie {
   const status = String(raw.status ?? "").toLowerCase();
   return {
     id: raw.movie_id ?? raw.id ?? raw.movieId,
@@ -89,4 +90,23 @@ export async function getMovie(id: number): Promise<Movie | null> {
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Could not load this movie (error ${res.status}).`);
   return toMovie(await res.json());
+}
+
+const toShowtime = (raw: any): Showtime => ({
+  id: raw.showtime_id,
+  movieId: raw.movie_id,
+  hall: raw.hall_number,
+  date: String(raw.show_date),
+  time: raw.show_time,
+});
+
+// Mock movies have no showtimes, since booking needs the real database.
+export async function getShowtimes(movieId: number): Promise<Showtime[]> {
+  if (USE_MOCK) return [];
+  return (await request<any[]>(`/movies/${movieId}/showtimes`)).map(toShowtime);
+}
+
+export async function getSeatMap(showtimeId: number): Promise<ShowSeat[]> {
+  const res = await request<any>(`/showtimes/${showtimeId}/seats`);
+  return res.seats.map((s: any) => ({ id: s.show_seat_id, number: s.seat_number, status: s.status }));
 }

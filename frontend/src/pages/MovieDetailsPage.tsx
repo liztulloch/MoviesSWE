@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { getMovie } from "../api/movies";
-import { showDatesFor, formatShowDate } from "../showtimes";
-import type { Movie } from "../types";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { getMovie, getShowtimes } from "../api/movies";
+import { groupByDay, formatShowDate } from "../showtimes";
+import type { Movie, Showtime } from "../types";
 import FavoriteButton from "../components/FavoriteButton";
 import ShowtimeList from "../components/ShowtimeList";
 import TrailerPlayer from "../components/TrailerPlayer";
@@ -11,22 +11,32 @@ import TrailerPlayer from "../components/TrailerPlayer";
 // Picking a date and time shows the Book button, which opens the booking page.
 export default function MovieDetailsPage() {
   const { id } = useParams();
+  const [params] = useSearchParams();
   const [movie, setMovie] = useState<Movie | null>(null);
+  const [showtimes, setShowtimes] = useState<Showtime[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [date, setDate] = useState<string | null>(null);
-  const [showtime, setShowtime] = useState<string | null>(null);
+  const [date, setDate] = useState<string | null>(params.get("date"));
+  const [showtime, setShowtime] = useState<Showtime | null>(null);
 
-  // Load the movie from the backend using the id in the URL.
+  // Load the movie and its showtimes from the backend using the id in the URL.
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     getMovie(Number(id))
-      .then((m) => { if (!cancelled) setMovie(m); })
+      .then(async (m) => {
+        const list = m ? await getShowtimes(m.id) : [];
+        if (cancelled) return;
+        setMovie(m);
+        setShowtimes(list);
+        // A time chip on the home page links here with ?date=&time=
+        const linked = list.filter((s) => s.date === params.get("date") && s.time === params.get("time"));
+        if (linked.length === 1) setShowtime(linked[0]);
+      })
       .catch((e: Error) => { if (!cancelled) setError(e.message); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [id]);
+  }, [id, params]);
 
   if (loading) return <p className="notice">Loading movie…</p>;
   if (error) return <p className="notice notice-error" role="alert">{error}</p>;
@@ -34,8 +44,8 @@ export default function MovieDetailsPage() {
 
   const comingSoon = movie.status === "COMING_SOON";
   const poster = movie.posterUrl || movie.trailerImage || "";
-  const dates = showDatesFor(movie);
-  const activeDate = date ?? dates[0].iso;
+  const dates = groupByDay(showtimes);
+  const activeDate = dates.some((d) => d.iso === date) ? date! : dates[0]?.iso ?? "";
 
     const selectDate = (iso: string) => {
     setDate(iso);
@@ -88,15 +98,12 @@ export default function MovieDetailsPage() {
             dates={dates}
             selectedDate={activeDate}
             onSelectDate={selectDate}
-            selectedTime={showtime}
-            onSelectTime={setShowtime}
+            selected={showtime}
+            onSelect={setShowtime}
           />
           {showtime && (
-            <Link
-              className="btn btn-primary"
-              to={`/booking/${movie.id}?date=${activeDate}&showtime=${encodeURIComponent(showtime)}`}
-            >
-              Book {formatShowDate(activeDate)} · {showtime}
+            <Link className="btn btn-primary" to={`/booking/${movie.id}?showtime=${showtime.id}`}>
+              Book {formatShowDate(showtime.date)} · {showtime.time} · Hall {showtime.hall}
             </Link>
           )}
         </div>

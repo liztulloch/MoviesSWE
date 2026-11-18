@@ -31,7 +31,12 @@ export const confirmError = (password: string, confirm: string) =>
 
 export const codeError = (code: string) => (/^\d{4}$/.test(code) ? "" : "Enter the 4-digit code from your email.");
 
-export const isAddressEmpty = (a: Address) => Object.values(a).every((v) => !v.trim());
+export function urlError(value: string, label: string) {
+  if (!value.trim()) return `${label} is required.`;
+  return /^https?:\/\/[^\s/]+\.[^\s]+$/i.test(value.trim()) ? "" : "Enter a full link that starts with https://.";
+}
+
+export const isAddressEmpty =(a: Address) => Object.values(a).every((v) => !v.trim());
 
 export type AddressErrors = Partial<Record<keyof Address, string>>;
 

@@ -1,17 +1,20 @@
-import type { ShowDate } from "../showtimes";
+import type { ShowDay } from "../showtimes";
+import type { Showtime } from "../types";
 
 interface Props {
-  dates: ShowDate[];
+  dates: ShowDay[];
   selectedDate: string;
   onSelectDate: (iso: string) => void;
-  selectedTime: string | null;
-  onSelectTime: (t: string) => void;
+  selected: Showtime | null;
+  onSelect: (s: Showtime) => void;
 }
 
 // Date buttons and time buttons on the details page.
-export default function ShowtimeList({ dates, selectedDate, onSelectDate, selectedTime, onSelectTime }: Props) {
+export default function ShowtimeList({ dates, selectedDate, onSelectDate, selected, onSelect }: Props) {
+  if (dates.length === 0) return <p className="meta">No showtimes are scheduled for this movie yet.</p>;
+
   // Only show the times for the date that is picked.
-  const times = dates.find((d) => d.iso === selectedDate)?.times ?? [];
+  const showtimes = dates.find((d) => d.iso === selectedDate)?.showtimes ?? [];
 
   return (
     <div>
@@ -32,21 +35,17 @@ export default function ShowtimeList({ dates, selectedDate, onSelectDate, select
 
       <p className="picker-label">Time</p>
       <div className="showtimes" role="group" aria-label="Showtimes">
-        {times.length === 0 ? (
-          <p className="meta">No showtimes scheduled for this date.</p>
-        ) : (
-          times.map((t) => (
-            <button
-              key={t}
-              type="button"
-              className={`chip ${selectedTime === t ? "chip-on" : ""}`}
-              aria-pressed={selectedTime === t}
-              onClick={() => onSelectTime(t)}
-            >
-              {t}
-            </button>
-          ))
-        )}
+        {showtimes.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            className={`chip ${selected?.id === s.id ? "chip-on" : ""}`}
+            aria-pressed={selected?.id === s.id}
+            onClick={() => onSelect(s)}
+          >
+            {s.time} · Hall {s.hall}
+          </button>
+        ))}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 // Turns showtimes into the date and time lists the pickers show.
-import { SHOWTIMES, type Movie, type MovieStatus } from "./types";
+import type { Showtime } from "./types";
 
 export interface ShowDate {
   iso: string;
@@ -7,8 +7,14 @@ export interface ShowDate {
   times: string[];
 }
 
+export interface ShowDay {
+  iso: string;
+  label: string;
+  showtimes: Showtime[];
+}
+
 const pad = (n: number) => String(n).padStart(2, "0");
-const toIso = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+export const toIso = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 export function formatShowDate(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
@@ -37,12 +43,21 @@ function toMinutes(time: string): number {
   return (hour + (pm ? 12 : 0)) * 60 + Number(m[2]);
 }
 
+export function isUpcoming(iso: string, time: string, now = new Date()): boolean {
+  const today = toIso(now);
+  if (iso !== today) return iso > today;
+  return toMinutes(time) > now.getHours() * 60 + now.getMinutes();
+}
+
+const compareShowtimes =(a: Showtime, b: Showtime) =>
+  a.date.localeCompare(b.date) || toMinutes(a.time) - toMinutes(b.time) || a.hall - b.hall;
+
 // Several halls can run the same movie at the same time, so times are de duplicated.
 export function groupShowtimes(stamps: string[]): ShowDate[] {
   const byDate = new Map<string, Set<string>>();
   for (const stamp of stamps) {
     const parsed = splitStamp(stamp);
-    if (!parsed) continue;
+    if (!parsed || !isUpcoming(...parsed)) continue;
     const [iso, time] = parsed;
     if (!byDate.has(iso)) byDate.set(iso, new Set());
     byDate.get(iso)!.add(time);
@@ -56,19 +71,18 @@ export function groupShowtimes(stamps: string[]): ShowDate[] {
     }));
 }
 
-// three consecutive days. coming soon starts two weeks out.
-export function getShowDates(status: MovieStatus, count = 3): ShowDate[] {
-  const startOffset = status === "COMING_SOON" ? 14 : 0;
-  return Array.from({ length: count }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() + startOffset + i);
-    const iso = toIso(d);
-    return { iso, label: formatShowDate(iso), times: [...SHOWTIMES] };
-  });
+// Upcoming showings only, one entry per day. Unlike groupShowtimes, each hall stays separate because each is its own booking.
+export function groupByDay(showtimes: Showtime[]): ShowDay[] {
+  const byDate = new Map<string, Showtime[]>();
+  for (const s of [...showtimes].sort(compareShowtimes)) {
+    if (!isUpcoming(s.date, s.time)) continue;
+    if (!byDate.has(s.date)) byDate.set(s.date, []);
+    byDate.get(s.date)!.push(s);
+  }
+  return [...byDate.entries()].map(([iso, list]) => ({ iso, label: formatShowDate(iso), showtimes: list }));
 }
 
-// Coming soon movies have no rows in the Showtime table
-export function showDatesFor(movie: Movie): ShowDate[] {
-  const scheduled = groupShowtimes(movie.showtimes ?? []);
-  return scheduled.length > 0 ? scheduled : getShowDates(movie.status);
-}
+// The database numbers seats row by row, 10 per row: 1-10 is row A, 11-20 is row B.
+export const SEATS_PER_ROW = 10;
+export const seatRow = (n: number) => String.fromCharCode(65 + Math.floor((n - 1) / SEATS_PER_ROW));
+export const seatLabel = (n: number) => `${seatRow(n)}${((n - 1) % SEATS_PER_ROW) + 1}`;

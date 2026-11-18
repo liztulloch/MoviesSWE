@@ -12,6 +12,10 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminHomePage from "./pages/AdminHomePage";
 import AdminSectionPage from "./pages/AdminSectionPage";
+import AdminMoviesPage from "./pages/AdminMoviesPage";
+import AdminShowtimesPage from "./pages/AdminShowtimesPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import PaymentPage from "./pages/PaymentPage";
 
 // Sets up the pages and which URL shows each one. The Navbar shows on every page.
 export default function App() {
@@ -31,8 +35,11 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           <Route path="/profile" element={<RequireAuth role="customer"><ProfilePage /></RequireAuth>} />
+          <Route path="/checkout" element={<RequireAuth role="customer"><CheckoutPage /></RequireAuth>} />
+          <Route path="/checkout/payment" element={<RequireAuth role="customer"><PaymentPage /></RequireAuth>} />
           <Route path="/admin" element={<RequireAuth role="admin"><AdminHomePage /></RequireAuth>} />
-          <Route path="/admin/:section" element={<RequireAuth role="admin"><AdminSectionPage /></RequireAuth>} />
+          <Route path="/admin/movies" element={<RequireAuth role="admin"><AdminMoviesPage /></RequireAuth>} />
+          <Route path="/admin/showtimes" element={<RequireAuth role="admin"><AdminShowtimesPage /></RequireAuth>} />          <Route path="/admin/:section" element={<RequireAuth role="admin"><AdminSectionPage /></RequireAuth>} />
 
           <Route
             path="*"
