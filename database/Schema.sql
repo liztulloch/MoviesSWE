@@ -674,6 +674,8 @@ FROM Showtime AS sh
 JOIN Seat AS s ON s.hall_id = sh.hall_id
 ORDER BY sh.showtime_id, s.seat_number;
 
+
+
 -- -- =============================================
 -- -- 7. BOOKINGS
 -- -- =============================================
