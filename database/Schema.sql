@@ -595,7 +595,14 @@ CROSS JOIN (
     SELECT '2:00 PM' AS show_time UNION ALL SELECT '5:00 PM' UNION ALL SELECT '8:00 PM'
 ) AS slot
 ORDER BY m.movie_id, demo_day.day_offset, slot.show_time;
+-- Admin account for local testing
 
+INSERT INTO `User` (first_name, last_name, email, phone_number, password, role)
+VALUES ('Admin', 'User', 'admin@cinema.com', '7065550199',
+        '$argon2id$v=19$m=65536,t=3,p=4$bYqSvJRhJE0wj9sS4yPepw$yj+E22PVPnFiJuC7Efpml9Hm762rOdj52r2S+26vghk', 'Admin');
+
+INSERT INTO `Admin` (admin_id)
+SELECT user_id FROM `User` WHERE email = 'admin@cinema.com';
 --     INSERT INTO `User`
 -- (first_name, last_name, email, phone_number, password)
 -- VALUES
