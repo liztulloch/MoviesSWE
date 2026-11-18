@@ -18,6 +18,7 @@ from src.Routes.Auth_routes import router as auth_router
 from src.Routes.Showtime_routes import router as showtime_router
 from src.Routes.Booking_routes import router as booking_router
 from src.Routes.Admin_schedule import router as admin_schedule_router
+from src.Routes.Admin_movie import router as admin_movie_router
 
 
 app = FastAPI(title="Cinema Booking API", version="0.1.0")
@@ -37,6 +38,7 @@ app.include_router(auth_router)
 app.include_router(showtime_router)
 app.include_router(booking_router)
 app.include_router(admin_schedule_router)
+app.include_router(admin_movie_router)
 
 
 @app.get("/health", tags=["health"])
